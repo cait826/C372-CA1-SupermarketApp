@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      background-color: lightblue;
+    }
+    .container {
+      margin-top: 20px;
+    }
+  </style>
+  <title>Supermarket App</title>
+</head>
+<body>
+  <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #1a1a1a;">
+  <div class="container-fluid">
+    <!-- Logo/Brand with Icon -->
+    <a class="navbar-brand d-flex align-items-center" href="/" style="background-color: #f8f9fa; color: #000; padding: 0.5rem 1rem; border-radius: 4px;">
+      <span style="font-size: 1.2rem; font-weight: bold;">🛒</span>
+    </a>
+    
+    <!-- Toggler for mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+      <!-- Left-aligned main navigation -->
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/" style="background-color: #f8f9fa; color: #000; padding: 0.5rem 1rem; border-radius: 4px; margin-left: 0.5rem;">Homepage</a>
+        </li>
+        
+        <% if (!user) { %>
+          <!-- Guest users: Show Register & Login -->
+          <li class="nav-item">
+            <a class="nav-link" href="/register" style="color: #4a9eff;">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login" style="color: #4a9eff;">Login</a>
+          </li>
+        <% } else { %>
+          <!-- Logged-in users: Show role-based links -->
+          <% if (user.role === "admin") { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin" style="color: #4a9eff;">Admin Dashboard</a>
+            </li>
+          <% } else if (user.role === "user") { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/shopping" style="color: #4a9eff;">View Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cart" style="color: #4a9eff;">Cart</a>
+            </li>
+          <% } %>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout" style="color: #4a9eff;">Logout</a>
+          </li>
+        <% } %>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #4a9eff;">More</a>
+          <ul class="dropdown-menu">
+            <% if (!user) { %>
+              <li><a class="dropdown-item" href="/login">Login</a></li>
+              <li><a class="dropdown-item" href="/register">Register</a></li>
+            <% } else { %>
+              <% if (user.role === "admin") { %>
+                <li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
+              <% } else { %>
+                <li><a class="dropdown-item" href="/shopping">Shop Now</a></li>
+                <li><a class="dropdown-item" href="/cart">My Cart</a></li>
+              <% } %>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            <% } %>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <!--this is the carsousel page-->
+    <div class="tab-content container mt-3">
+        <div id="home" class="tab-pane fade show active" role="tabpanel"><br>
+            <h3>Welcome to my supermarket app</h3>
+            <div id="demo" class="carousel slide" data-bs-ride="carousel" style="height: 50vh;">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
+                </div>
+
+                <div class="carousel-inner" style="height: 100%;">
+                    <div class="carousel-item active">
+                        <img src="/images/supermarket1.jpg" class="d-block w-100 h-100" alt="supermarket1" style="object-fit: cover;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="/images/supermarket2.jpg" class="d-block w-100 h-100" alt="supermarket2" style="object-fit: cover;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="/images/supermarket3.jpg" class="d-block w-100 h-100" alt="supermarket3" style="object-fit: cover;">
+                    </div>
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+            <div class="container mt-5">
+
+    <!--this is the main page(welcome page)-->
+    <div class="container">
+        <p style="text-align: center mt-4;">
+            <% if (user) {%>
+              <% if (user.role === "admin") { %>
+                <br>
+                <h5>You are logged in as a administrator, <%=user.username%></h5>
+              <% } else if (user.role === "user"){ %>
+                <br>
+                <h5>Welcome back, <%=user.username%></h5>
+                <p>Please browse the available products below</p>
+                <% } %>
+            <% } else { %>
+            <br>
+            <div class="text-center-mt-5">
+
+              <div class="d-flex justify-content-center">
+                <a href="/register" class="btn btn-primary me-2">Register</a>
+                <a href="/login" class="btn btn-secondary">Login</a>
+              </div>
+            </div>
+          <% } %>  
+    </div>
+</body>
+</html> 
