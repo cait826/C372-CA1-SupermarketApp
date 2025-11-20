@@ -22,10 +22,10 @@
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="/cart">View Cart</a>
+              <a class="nav-link" href="/cart" style="color: #4a9eff;">View Cart</a>
             </li> 
             <li class="nav-item">
-              <a class="nav-link" href="/logout">Logout</a>
+              <a class="nav-link" href="/logout" style="color: #4a9eff;">Logout</a>
             </li> 
           </ul>
         </div>
@@ -60,6 +60,18 @@
         Found <%= products.length %> result(s) for "<%= searchQuery %>"
         </p>
       <% } %>
+      <% var selectedCategory = typeof selectedCategory !== 'undefined' ? selectedCategory : 'All'; %>
+
+      <form action="/products" method="GET" class="filter-form">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+        <option value="All" <%= selectedCategory === 'All' ? 'selected' : '' %>>All Categories</option>
+        <option value="Produce" <%= selectedCategory === 'Produce' ? 'selected' : '' %>>Produce</option>
+        <option value="Drinks" <%= selectedCategory === 'Drinks' ? 'selected' : '' %>>Drinks</option>
+        <option value="Others" <%= selectedCategory === 'Others' ? 'selected' : '' %>>Others</option>
+    </select>
+  </form>
+
+
 
     <br>
     <table class="table table-hover small text-center">

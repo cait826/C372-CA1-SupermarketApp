@@ -20,7 +20,7 @@
   <div class="container-fluid">
     <!-- Logo/Brand with Icon -->
     <a class="navbar-brand d-flex align-items-center" href="/" style="background-color: #f8f9fa; color: #000; padding: 0.5rem 1rem; border-radius: 4px;">
-      <span style="font-size: 1.2rem; font-weight: bold;">🛒</span>
+      <span style="font-size: 1.2rem; font-weight: bold;">Supermarket App🛒</span>
     </a>
     
     <!-- Toggler for mobile -->
@@ -51,7 +51,7 @@
             </li>
           <% } else if (user.role === "user") { %>
             <li class="nav-item">
-              <a class="nav-link" href="/shopping" style="color: #4a9eff;">View Products</a>
+              <a class="nav-link" href="/shopping" style="color: #4a9eff;">Shop Now</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/cart" style="color: #4a9eff;">Cart</a>
@@ -62,6 +62,7 @@
           </li>
         <% } %>
         
+        <!-- Dropdown menu -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #4a9eff;">More</a>
           <ul class="dropdown-menu">

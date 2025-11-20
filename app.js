@@ -147,7 +147,12 @@ app.post('/login', (req, res) => {
 // Shopping listing - use ProductController to render appropriate view
 app.get('/shopping', checkAuthenticated, productController.list);
 
+// Search by name
 app.get("/products/search", checkAuthenticated, productController.search);
+
+// Filter by category
+app.get('/products', checkAuthenticated, productController.filterByCategory);
+
 
 // Add to cart: use the Product model
 app.post('/add-to-cart/:id', checkAuthenticated, (req, res) => {
@@ -215,6 +220,9 @@ app.post('/promoteUser/:id', checkAuthenticated, checkAdmin, userController.prom
 
 // Admin: delete a user (use POST)
 app.post('/deleteUser/:id', checkAuthenticated, checkAdmin, userController.deleteUser);
+
+//Admin: add user form
+app.post('/addUser', checkAuthenticated, checkAdmin, userController.addUser);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}`));

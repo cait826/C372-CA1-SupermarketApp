@@ -16,16 +16,16 @@ const Product = {
         });
     },
     add: function(product, callback) {
-        const sql = 'INSERT INTO products (productName, quantity, price, image) VALUES (?, ?, ?, ?)';
-        const params = [product.productName, product.quantity, product.price, product.image || null];
+        const sql = 'INSERT INTO products (productName, quantity, price, image, category) VALUES (?, ?, ?, ?, ?)';
+        const params = [product.productName, product.quantity, product.price, product.image || null, product.category || "Other"];
         db.query(sql, params, (err, result) => {
             if (err) return callback(err);
             callback(null, result);
         });
     },
     update: function(id, product, callback) {
-        const sql = 'UPDATE products SET productName = ?, quantity = ?, price = ?, image = ? WHERE id = ?';
-        const params = [product.productName, product.quantity, product.price, product.image || null, id];
+        const sql = 'UPDATE products SET productName = ?, quantity = ?, price = ?, image = ?, category = ? WHERE id = ?';
+        const params = [product.productName, product.quantity, product.price, product.image || null, product.category || "Other", id];
         db.query(sql, params, (err, result) => {
             if (err) return callback(err);
             callback(null, result);
@@ -36,6 +36,14 @@ const Product = {
         db.query(sql, [id], (err, result) => {
             if (err) return callback(err);
             callback(null, result);
+        });
+    },
+
+    getByCategory: function(category, callback) {
+        const sql = 'SELECT * FROM products WHERE category = ?';
+        db.query(sql, [category], (err, results) => {
+            if (err) return callback(err);
+            callback(null, results);
         });
     },
 

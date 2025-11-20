@@ -12,7 +12,7 @@ const ProductController = {
                 res.render('inventory', { products, user: req.session.user });
             } else {
                 // User or guest view → index.ejs
-                res.render('shopping', { products, user: req.session.user || null });
+                res.render('shopping', { products, user: req.session.user});
             }
         });
     },
@@ -33,7 +33,8 @@ const ProductController = {
             productName: req.body.name,
             quantity: req.body.quantity,
             price: req.body.price,
-            image: req.file ? req.file.filename : (req.body.image || null)
+            image: req.file ? req.file.filename : (req.body.image || null),
+            category: req.body.category
         };
 
         Product.add(newProduct, (err, result) => {
@@ -50,6 +51,7 @@ const ProductController = {
             productName: req.body.name,
             quantity: req.body.quantity,
             price: req.body.price,
+            category: req.body.category,
             image: req.file ? req.file.filename : req.body.currentImage 
         };
 
@@ -87,6 +89,35 @@ const ProductController = {
         });
     }, 
 
+    // Filter products by category (reads req.query.category). If no category provided, returns all products.
+    filterByCategory: function (req, res) {
+        const category = (req.query.category || '').trim();
+
+        if (!category) {
+            // No category selected -> show all products
+            Product.getAll((err, products) => {
+                if (err) return res.status(500).send('Database error');
+
+                if (req.session.user && req.session.user.role === 'admin') {
+                    res.render('inventory', { products, user: req.session.user });
+                } else {
+                    res.render('shopping', { products, user: req.session.user || null });
+                }
+            });
+        } else {
+            // Filter by selected category
+            Product.getByCategory(category, (err, products) => {
+                if (err) return res.status(500).send('Database error');
+
+                if (req.session.user && req.session.user.role === 'admin') {
+                    res.render('inventory', { products, user: req.session.user, selectedCategory: category });
+                } else {
+                    res.render('shopping', { products, user: req.session.user || null, selectedCategory: category });
+                }
+            });
+        }
+    },
+
     search: function (req, res) {
         const query = req.query.q || '';
         if (!query.trim()) {
@@ -101,7 +132,37 @@ const ProductController = {
                 res.render('shopping', { products, user: req.session.user || null, searchQuery: query});
             }
         });
+    },
+
+    filterByCategory: function(req, res) {
+    const category = (req.query.category || '').trim();
+
+    // If "All" or empty → show all products
+    if (!category || category === 'All') {
+        Product.getAll((err, products) => {
+            if (err) return res.status(500).send('Database error');
+
+            if (req.session.user.role === 'admin') {
+                res.render('inventory', { products, user: req.session.user, selectedCategory: 'All' });
+            } else {
+                res.render('shopping', { products, user: req.session.user, selectedCategory: 'All' });
+            }
+        });
+        return;
     }
+
+    // Otherwise filter by category
+    Product.getByCategory(category, (err, products) => {
+        if (err) return res.status(500).send('Database error');
+
+        if (req.session.user.role === 'admin') {
+            res.render('inventory', { products, user: req.session.user, selectedCategory: category });
+        } else {
+            res.render('shopping', { products, user: req.session.user, selectedCategory: category });
+        }
+    });
+},
+
 };
 
 module.exports = ProductController;

@@ -22,7 +22,7 @@ const User = {
     // Add a new user
     // user: { username, email, password, address, contact, role }
     add: function(user, callback) {
-        const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA(?), ?, ?, ?)';
         const params = [
             user.username,
             user.email,

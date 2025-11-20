@@ -16,7 +16,7 @@ const UserController = {
             if (err) return res.status(500).send('Database error');
             res.render('inventory', { products, user: req.session.user });
         });
-    },
+    },       
 
     // Render add product form (admin only)
     addProductForm: function (req, res) {
@@ -83,6 +83,35 @@ const UserController = {
         const id = req.params.id;
         User.delete(id, (err) => {
             if (err) return res.status(500).send('Database error');
+            res.redirect('/manageuser');
+        });
+    },
+
+    //add a new user (admin only)
+    addUser: function (req, res) {
+        if (!isAdmin(req)) return res.status(403).send('Forbidden');
+
+        const { username, email, password, address, contact, role } = req.body;
+
+        // Validate all fields
+        if (!username || !email || !password || !address || !contact || !role) {
+            return res.status(400).send('All fields are required.');
+        }
+
+        const newUser = {
+            username,
+            email,
+            password, // Will be hashed by User.add method
+            address,
+            contact,
+            role
+        };
+
+        User.add(newUser, (err, result) => {
+            if (err) {
+                console.error('Error adding user:', err);
+                return res.status(500).send('Database error: ' + err.message);
+            }
             res.redirect('/manageuser');
         });
     }
