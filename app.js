@@ -9,6 +9,9 @@ const connection = require('./db');
 const productController = require('./controllers/ProductController');
 const userController = require('./controllers/UserController');
 const Product = require('./models/Product');
+const cartController = require('./controllers/CartController');
+const orderController = require('./controllers/OrderController');
+
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -153,46 +156,58 @@ app.get("/products/search", checkAuthenticated, productController.search);
 // Filter by category
 app.get('/products', checkAuthenticated, productController.filterByCategory);
 
+// Cart routes - use CartController
+// Add item to cart (product id in params)
+app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
 
-// Add to cart: use the Product model
-app.post('/add-to-cart/:id', checkAuthenticated, (req, res) => {
-    const productId = parseInt(req.params.id);
-    const quantity = parseInt(req.body.quantity) || 1;
+// View cart
+app.get('/cart', checkAuthenticated, cartController.viewCart);
 
-    Product.getById(productId, (err, product) => {
-        if (err) return res.status(500).send('Database error');
-        if (!product) return res.status(404).send('Product not found');
+// Update item quantity (cart item id)
+app.post('/cart/update/:id', checkAuthenticated, cartController.updateQuantity);
 
-        if (!req.session.cart) {
-            req.session.cart = [];
+// Remove one item
+app.post('/cart/remove/:id', checkAuthenticated, cartController.removeItem);
+
+// Clear all items from user's cart
+app.post('/cart/clear', checkAuthenticated, cartController.clearCart);
+
+// Review order (confirmation page)
+app.get('/cart/review', checkAuthenticated, cartController.reviewOrder);
+
+// Confirm order (yes/no)
+app.post('/cart/confirm', checkAuthenticated, cartController.confirmOrder);
+
+// Checkout page (GET)
+app.get('/checkout', checkAuthenticated, (req, res) => {
+    const Cart = require('./models/Cart');
+    const userId = req.session.user.id;
+
+    Cart.getAllByUser(userId, (err, items) => {
+        if (err) {
+            console.error("Checkout GET error:", err);
+            return res.status(500).send("Database error");
         }
 
-        const existingItem = req.session.cart.find(item => item.productId === productId);
-        if (existingItem) {
-            existingItem.quantity += quantity;
-        } else {
-            req.session.cart.push({
-                id: product.productId || product.id,
-                productName: product.productName || product.name,
-                price: product.price,
-                quantity: quantity,
-                image: product.image
-            });
-        }
+        const total = items.reduce(
+            (sum, item) => sum + (item.price * item.quantity),
+            0
+        );
 
-        res.redirect('/cart');
+        res.render('checkout', {
+            items,
+            total,
+            user: req.session.user
+        });
     });
 });
+// Checkout processing (POST)
 
-app.get('/cart', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    res.render('cart', { cart, user: req.session.user });
-});
+app.post('/checkout', checkAuthenticated, orderController.checkout);
 
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
-});
+// User invoice page
+app.get('/invoice/:id', checkAuthenticated, orderController.viewOrder);
+
 
 // Product details - use ProductController
 app.get('/product/:id', checkAuthenticated, productController.getById);
@@ -223,6 +238,21 @@ app.post('/deleteUser/:id', checkAuthenticated, checkAdmin, userController.delet
 
 //Admin: add user form
 app.post('/addUser', checkAuthenticated, checkAdmin, userController.addUser);
+
+// List all orders for admin
+app.get('/admin/orders', checkAuthenticated, checkAdmin, orderController.listOrders);
+
+// Admin: view single order & items
+app.get('/admin/orders/:id', checkAuthenticated, checkAdmin, orderController.viewOrder);
+
+// Admin: update order status
+app.post('/admin/orders/:id/status', checkAuthenticated, checkAdmin, orderController.updateStatus);
+
+
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}`));
