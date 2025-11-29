@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Checkout</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: lightblue; }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <% /* Two modes: review (orderCompleted falsy) and completed (truthy) */ %>
+
+            <% if (orderCompleted) { %>
+              <h3 class="card-title mb-3">Order Confirmed</h3>
+              <p class="mb-2">Thank you<% if (user && user.username) { %>, <%= user.username %><% } %>. Your order has been placed.</p>
+
+              <% if (order && order.id) { %>
+                <div class="mb-3">
+                  <strong>Order No:</strong> <span class="text-primary"><%= order.id %></span>
+                </div>
+              <% } %>
+
+              <% /* Display purchased items and totals (items should be passed by controller) */ %>
+              <% if (items && items.length) { %>
+                <div class="table-responsive mb-3">
+                  <table class="table table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Quantity</th>
+                        <th class="text-end">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% items.forEach(function(it){ 
+                          const name = it.productName || it.product_name || 'Item';
+                          const price = Number(it.price || it.price_each || 0);
+                          const qty = Number(it.quantity || 0);
+                          const line = price * qty;
+                      %>
+                        <tr>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <% if (it.image) { %>
+                                <img src="/images/<%= it.image %>" alt="" class="me-3" style="width:56px;height:56px;object-fit:cover;border-radius:4px;">
+                              <% } %>
+                              <div><%= name %></div>
+                            </div>
+                          </td>
+                          <td class="text-end">$<%= price.toFixed(2) %></td>
+                          <td class="text-end"><%= qty %></td>
+                          <td class="text-end">$<%= line.toFixed(2) %></td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th colspan="3" class="text-end">Total</th>
+                        <th class="text-end">
+                          $<%= Number(order && (order.total_price || order.total) ? (order.total_price || order.total) : (typeof total !== 'undefined' ? total : items.reduce((s,it)=>s+(Number(it.price||it.price_each||0)*Number(it.quantity||0)),0))).toFixed(2) %>
+                        </th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              <% } %>
+
+              <div class="d-flex gap-2">
+                <a href="/shopping" class="btn btn-primary">Continue shopping</a>
+                <a href="/logout" class="btn btn-secondary">Exit (log out)</a>
+                <% if (order && order.id) { %>
+                  <a href="/invoice/<%= order.id %>" class="btn btn-outline-primary">View invoice</a>
+                <% } %>
+              </div>
+
+            <% } else { %>
+
+              <h3 class="card-title mb-3">Review & Confirm</h3>
+              <p class="mb-3">Please review your order below. When you're ready, confirm to complete checkout.</p>
+
+              <% if (items && items.length) { %>
+                <div class="table-responsive mb-3">
+                  <table class="table table-hover align-middle">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Quantity</th>
+                        <th class="text-end">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% items.forEach(function(it){ 
+                          const name = it.productName || it.product_name || 'Item';
+                          const price = Number(it.price || it.price_each || 0);
+                          const qty = Number(it.quantity || 0);
+                          const line = price * qty;
+                      %>
+                        <tr>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <% if (it.image) { %>
+                                <img src="/images/<%= it.image %>" alt="" class="me-3" style="width:56px;height:56px;object-fit:cover;border-radius:4px;">
+                              <% } %>
+                              <div><%= name %></div>
+                            </div>
+                          </td>
+                          <td class="text-end">$<%= price.toFixed(2) %></td>
+                          <td class="text-end"><%= qty %></td>
+                          <td class="text-end">$<%= line.toFixed(2) %></td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th colspan="3" class="text-end">Total</th>
+                        <th class="text-end">
+                          $<%= Number(typeof total !== 'undefined' ? total : items.reduce((s,it)=>s+(Number(it.price||it.price_each||0)*Number(it.quantity||0)),0)).toFixed(2) %>
+                        </th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="alert alert-info">Your cart is empty.</div>
+              <% } %>
+
+              <form method="post" action="/cart/confirm" class="d-flex gap-2">
+                <input type="hidden" name="confirm" value="yes" />
+                <button type="/checkoutconfirm" class="btn btn-success">Confirm & Proceed to Checkout</button>
+                <a href="/cart" class="btn btn-outline-secondary">Back to cart</a>
+                <a href="/shopping" class="btn btn-outline-primary">Continue shopping</a>
+              </form>
+
+            <% } %>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

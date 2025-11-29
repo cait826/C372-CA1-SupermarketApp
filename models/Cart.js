@@ -5,22 +5,20 @@ const Cart = {
     // Get all cart items for a user, joined with product details
     getAllByUser(userId, callback) {
         const sql = `
-            SELECT 
+            SELECT
                 c.id AS cartId,
-                c.users_id,
-                c.products_id AS productId,
-                c.quantity,
+                p.id AS productId,
                 p.productName,
-                p.price,
                 p.image,
-                p.category
+                p.price,
+                c.quantity
             FROM cart c
             JOIN products p ON c.products_id = p.id
             WHERE c.users_id = ?
         `;
         db.query(sql, [userId], (err, results) => {
             if (err) return callback(err);
-            callback(null, results);
+            return callback(null, results);
         });
     },
 
@@ -39,7 +37,7 @@ const Cart = {
         db.query(findSql, [userId, productId], (err, rows) => {
             if (err) return callback(err);
 
-            if (rows.length > 0) {
+            if (rows && rows.length > 0) {
                 // already in cart → increase quantity
                 const existing = rows[0];
                 const newQty = existing.quantity + qty;
@@ -50,7 +48,7 @@ const Cart = {
                 `;
                 db.query(updateSql, [newQty, existing.id], (err2, result) => {
                     if (err2) return callback(err2);
-                    callback(null, result);
+                    return callback(null, result);
                 });
             } else {
                 const insertSql = `
@@ -59,7 +57,7 @@ const Cart = {
                 `;
                 db.query(insertSql, [userId, productId, qty], (err2, result) => {
                     if (err2) return callback(err2);
-                    callback(null, result);
+                    return callback(null, result);
                 });
             }
         });
@@ -83,7 +81,7 @@ const Cart = {
         const sql = 'UPDATE cart SET quantity = ? WHERE id = ?';
         db.query(sql, [qty, cartId], (err, result) => {
             if (err) return callback(err);
-            callback(null, result);
+            return callback(null, result);
         });
     },
 
@@ -92,7 +90,7 @@ const Cart = {
         const sql = 'DELETE FROM cart WHERE id = ?';
         db.query(sql, [cartId], (err, result) => {
             if (err) return callback(err);
-            callback(null, result);
+            return callback(null, result);
         });
     },
 
@@ -101,7 +99,7 @@ const Cart = {
         const sql = 'DELETE FROM cart WHERE users_id = ?';
         db.query(sql, [userId], (err, result) => {
             if (err) return callback(err);
-            callback(null, result);
+            return callback(null, result);
         });
     }
 };

@@ -9,6 +9,9 @@ const connection = require('./db');
 const productController = require('./controllers/ProductController');
 const userController = require('./controllers/UserController');
 const Product = require('./models/Product');
+const User = require('./models/User');
+const Order = require('./models/Order');
+const Cart = require('./models/Cart');
 const cartController = require('./controllers/CartController');
 const orderController = require('./controllers/OrderController');
 
@@ -156,59 +159,6 @@ app.get("/products/search", checkAuthenticated, productController.search);
 // Filter by category
 app.get('/products', checkAuthenticated, productController.filterByCategory);
 
-// Cart routes - use CartController
-// Add item to cart (product id in params)
-app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
-
-// View cart
-app.get('/cart', checkAuthenticated, cartController.viewCart);
-
-// Update item quantity (cart item id)
-app.post('/cart/update/:id', checkAuthenticated, cartController.updateQuantity);
-
-// Remove one item
-app.post('/cart/remove/:id', checkAuthenticated, cartController.removeItem);
-
-// Clear all items from user's cart
-app.post('/cart/clear', checkAuthenticated, cartController.clearCart);
-
-// Review order (confirmation page)
-app.get('/cart/review', checkAuthenticated, cartController.reviewOrder);
-
-// Confirm order (yes/no)
-app.post('/cart/confirm', checkAuthenticated, cartController.confirmOrder);
-
-// Checkout page (GET)
-app.get('/checkout', checkAuthenticated, (req, res) => {
-    const Cart = require('./models/Cart');
-    const userId = req.session.user.id;
-
-    Cart.getAllByUser(userId, (err, items) => {
-        if (err) {
-            console.error("Checkout GET error:", err);
-            return res.status(500).send("Database error");
-        }
-
-        const total = items.reduce(
-            (sum, item) => sum + (item.price * item.quantity),
-            0
-        );
-
-        res.render('checkout', {
-            items,
-            total,
-            user: req.session.user
-        });
-    });
-});
-// Checkout processing (POST)
-
-app.post('/checkout', checkAuthenticated, orderController.checkout);
-
-// User invoice page
-app.get('/invoice/:id', checkAuthenticated, orderController.viewOrder);
-
-
 // Product details - use ProductController
 app.get('/product/:id', checkAuthenticated, productController.getById);
 
@@ -239,14 +189,42 @@ app.post('/deleteUser/:id', checkAuthenticated, checkAdmin, userController.delet
 //Admin: add user form
 app.post('/addUser', checkAuthenticated, checkAdmin, userController.addUser);
 
-// List all orders for admin
-app.get('/admin/orders', checkAuthenticated, checkAdmin, orderController.listOrders);
+// --- Checkout / Cart / Order Routes (fixed & de-duplicated) ---
 
-// Admin: view single order & items
-app.get('/admin/orders/:id', checkAuthenticated, checkAdmin, orderController.viewOrder);
+// Cart routes - use CartController
+app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
+app.get('/cart', checkAuthenticated, cartController.viewCart);
+app.post('/cart/update/:id', checkAuthenticated, cartController.updateQuantity);
+app.post('/cart/remove/:id', checkAuthenticated, cartController.removeItem);
 
-// Admin: update order status
-app.post('/admin/orders/:id/status', checkAuthenticated, checkAdmin, orderController.updateStatus);
+// Clear cart (support GET for link and POST for form)
+app.get('/cart/clear', checkAuthenticated, cartController.clearCart);
+app.post('/cart/clear', checkAuthenticated, cartController.clearCart);
+
+// Review order (confirmation page - REVIEW MODE only)
+app.get('/cart/review', checkAuthenticated, cartController.reviewOrder);
+
+// Confirm review (user intent) -> CartController still only forwards to checkout flow
+app.post('/cart/confirm', checkAuthenticated, cartController.confirmOrder);
+
+// CHECKOUT ROUTES (single, non-conflicting)
+// 1) GET /checkout  -> show review/checkout page (CartController)
+app.get('/checkout', checkAuthenticated, cartController.checkoutPage);
+
+// 2) POST /checkout -> create order (OrderController). OrderController.checkout must create the order,
+//    clear cart, and render (or redirect to) the final confirmation. No other /checkout POST routes.
+app.post('/checkout', checkAuthenticated, orderController.checkout);
+
+// Final confirmation page SHOULD NOT be directly reachable unless OrderController provided data.
+// Remove stray GET /checkoutconfirm routes that rendered without order context.
+// If you want a dedicated URL after creation, OrderController.checkout should redirect to it.
+// (Invoice route below handles viewing by id.)
+
+// Invoice / view specific order (user-level invoice)
+app.get('/invoice/:id', checkAuthenticated, orderController.viewOrder);
+
+// Admin order management (unchanged)
+app.get('/manageOrders', checkAuthenticated, checkAdmin, orderController.listOrders);
 
 
 app.get('/logout', (req, res) => {

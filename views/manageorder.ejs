@@ -18,7 +18,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
                     <li class="nav-item"><a class="nav-link" href="/manageuser">Manage Users</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/admin/orders">Manage Orders</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/manageOrders">Manage Orders</a></li>
                     <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
                 </ul>
             </div>
@@ -45,7 +45,7 @@
             <tbody>
                 <% orders.forEach(order => { %>
                 <tr>
-                    <form action="/admin/orders/<%= order.id %>/status" method="POST">
+                    <form action="/manageOrders/<%= order.id %>/status" method="POST">
                         <td><%= order.id %></td>
                         <td><%= order.username %></td>
                         <td>$<%= order.total_price %></td>
@@ -65,7 +65,7 @@
                     </form>
 
                     <td>
-                        <a href="/admin/orders/<%= order.id %>" class="btn btn-info btn-sm">View</a>
+                        <a href="/manageOrders/<%= order.id %>" class="btn btn-info btn-sm">View</a>
                     </td>
                 </tr>
                 <% }) %>
