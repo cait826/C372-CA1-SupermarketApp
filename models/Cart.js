@@ -1,5 +1,10 @@
 const db = require('../db');
 
+const toNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+};
+
 const Cart = {
     // Get all cart items for a user, joined with product details
     // Returns array of objects with: cartId, productId, productName, image, price, quantity
@@ -18,14 +23,22 @@ const Cart = {
         `;
         db.query(sql, [userId], (err, results) => {
             if (err) return callback(err);
-            const items = (results || []).map(r => ({
-                cartId: Number(r.cartId),
-                productId: Number(r.productId),
-                productName: r.productName,
-                image: r.image,
-                price: Number(r.price || 0),
-                quantity: Number(r.quantity || 0)
-            }));
+            const items = (results || []).map(r => {
+                // ensure numeric conversions are explicit and safe
+                const cartId = toNumber(r.cartId);
+                const productId = toNumber(r.productId);
+                const price = Number.isFinite(Number(r.price)) ? Number(r.price) : 0;
+                const quantity = Number.isFinite(Number(r.quantity)) ? Number(r.quantity) : 0;
+
+                return {
+                    cartId,
+                    productId,
+                    productName: r.productName || '',
+                    image: r.image || '',
+                    price,
+                    quantity
+                };
+            });
             return callback(null, items);
         });
     },
@@ -52,7 +65,7 @@ const Cart = {
 
             if (rows && rows.length > 0) {
                 const existing = rows[0];
-                const newQty = Number(existing.quantity || 0) + qty;
+                const newQty = toNumber(existing.quantity) + qty;
                 const updateSql = `UPDATE cart SET quantity = ? WHERE id = ?`;
                 db.query(updateSql, [newQty, existing.id], (err2, result) => {
                     if (err2) return callback(err2);

@@ -17,34 +17,82 @@ const Order = {
         }, 0);
 
         const insertOrderSql = `
-    INSERT INTO orders (users_id, total_price, order_date, status)
-    VALUES (?, ?, NOW(), 'Pending')
-`;
+            INSERT INTO orders (users_id, total_price, order_date, status)
+            VALUES (?, ?, NOW(), 'Completed')
+        `;
 
-db.query(insertOrderSql, [userId, total], (err, orderResult) => {
-    if (err) return callback(err);
+        const insertItemsSql = `
+            INSERT INTO orders_items (orders_id, products_id, quantity, price_each)
+            VALUES ?
+        `;
 
-    const orderId = orderResult.insertId;
+        // Begin transaction on single connection (no pool)
+        db.beginTransaction((txErr) => {
+            if (txErr) return callback(txErr);
 
-    const values = orderItems.map(it => [
-        orderId,
-        it.productId,
-        it.quantity,
-        it.priceEach
-    ]);
+            db.query(insertOrderSql, [userId, total], (insErr, insRes) => {
+                if (insErr) {
+                    return db.rollback(() => {
+                        return callback(insErr);
+                    });
+                }
 
-    const insertItemsSql = `
-        INSERT INTO orders_items (orders_id, products_id, quantity, price_each)
-        VALUES ?
-    `;
+                const orderId = insRes.insertId;
 
-    db.query(insertItemsSql, [values], (err2) => {
-        if (err2) return callback(err2);
+                const values = orderItems.map(it => [
+                    orderId,
+                    it.productId,
+                    it.quantity,
+                    it.priceEach
+                ]);
 
-        return callback(null, orderId, total);
-    });
-});
+                db.query(insertItemsSql, [values], (itemsErr) => {
+                    if (itemsErr) {
+                        return db.rollback(() => {
+                            return callback(itemsErr);
+                        });
+                    }
 
+                    // Deduct stock for each ordered item (prevent negative stock using GREATEST)
+                    const updateProdSql = 'UPDATE products SET quantity = GREATEST(quantity - ?, 0) WHERE id = ?';
+
+                    let idx = 0;
+                    const doNextUpdate = () => {
+                        if (idx >= orderItems.length) {
+                            // all updates done -> commit
+                            return db.commit((commitErr) => {
+                                if (commitErr) {
+                                    return db.rollback(() => {
+                                        return callback(commitErr);
+                                    });
+                                }
+                                return callback(null, orderId, total);
+                            });
+                        }
+
+                        const it = orderItems[idx++];
+                        const qty = Number(it.quantity || 0);
+                        const pid = Number(it.productId || 0);
+
+                        // skip invalid entries
+                        if (!pid || qty <= 0) return doNextUpdate();
+
+                        db.query(updateProdSql, [qty, pid], (prodErr) => {
+                            if (prodErr) {
+                                return db.rollback(() => {
+                                    return callback(prodErr);
+                                });
+                            }
+                            // proceed to next
+                            doNextUpdate();
+                        });
+                    };
+
+                    // start decrement loop
+                    doNextUpdate();
+                });
+            });
+        });
     },
 
     // Get all orders for admin

@@ -33,16 +33,18 @@ const CartController = {
                 return res.status(500).send('Database error');
             }
 
+            // Normalize rows into items with numeric fields
             const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
+                cartId: Number(r.cartId),
+                productId: Number(r.productId),
                 productName: r.productName,
                 image: r.image,
                 price: Number(r.price || 0),
                 quantity: Number(r.quantity || 0)
             }));
 
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+            // Safe total calculation using reduce
+            const total = items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
 
             // Render the editable cart page (cart.ejs)
             res.render('cart', {
@@ -68,15 +70,16 @@ const CartController = {
             }
 
             const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
+                cartId: Number(r.cartId),
+                productId: Number(r.productId),
                 productName: r.productName,
                 image: r.image,
                 price: Number(r.price || 0),
                 quantity: Number(r.quantity || 0)
             }));
 
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+            // Safe total calculation using reduce
+            const total = items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
 
             // Render the cart template but in review/read-only mode
             res.render('cart', {
@@ -101,15 +104,19 @@ const CartController = {
             }
 
             const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
+                cartId: Number(r.cartId),
+                productId: Number(r.productId),
                 productName: r.productName,
                 image: r.image,
                 price: Number(r.price || 0),
                 quantity: Number(r.quantity || 0)
             }));
 
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+            let total = 0;
+            for (const item of items) {
+                total += Number(item.price || 0) * Number(item.quantity || 0);
+            }
+            total = Number(total);
 
             // Render the read-only checkout preview
             res.render('checkout', {
@@ -133,15 +140,19 @@ const CartController = {
             }
 
             const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
+                cartId: Number(r.cartId),
+                productId: Number(r.productId),
                 productName: r.productName,
                 image: r.image,
                 price: Number(r.price || 0),
                 quantity: Number(r.quantity || 0)
             }));
 
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+            let total = 0;
+            for (const item of items) {
+                total += Number(item.price || 0) * Number(item.quantity || 0);
+            }
+            total = Number(total);
 
             res.render('reviewcart', {
                 items,

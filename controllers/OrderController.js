@@ -2,7 +2,6 @@ const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 
 const OrderController = {
-
     // POST /checkoutconfirm -> create order from cart, insert items, clear cart, then redirect to confirmation page
     confirmCheckout(req, res) {
         if (!req.session.user) return res.status(401).send('Unauthorized');
@@ -26,7 +25,7 @@ const OrderController = {
                 priceEach: Number(it.price)
             }));
 
-            // Create order (model is transactional)
+            // Create order (model handles transactional inserts and stock adjustments)
             Order.createOrder(userId, orderItems, (createErr, maybeOrderId, maybeTotal) => {
                 if (createErr) {
                     console.error('Order.createOrder error:', createErr);
@@ -40,7 +39,6 @@ const OrderController = {
                 } else if (maybeOrderId && typeof maybeOrderId === 'object') {
                     orderId = maybeOrderId.insertId || maybeOrderId.orderId || maybeOrderId.id || null;
                 } else if (typeof maybeTotal === 'number' && !maybeOrderId) {
-                    // fallback: some implementations might call (err, orderId) into second param
                     orderId = maybeTotal;
                 }
 
@@ -49,10 +47,18 @@ const OrderController = {
                     return res.status(500).send('Failed to create order');
                 }
 
-                // Clear user's cart and redirect to confirmation page
-                Cart.clearByUser(userId, (clearErr) => {
-                    if (clearErr) console.error('Cart.clearByUser error after order:', clearErr);
-                    return res.redirect(`/checkoutconfirm/${orderId}`);
+                // Optional: mark order as Completed (model may already handle this)
+                Order.updateStatus(orderId, 'Completed', (updErr) => {
+                    if (updErr) {
+                        console.error('Order.updateStatus error after createOrder:', updErr);
+                        // continue flow even if status update fails
+                    }
+
+                    // Clear user's cart and redirect to confirmation page
+                    Cart.clearByUser(userId, (clearErr) => {
+                        if (clearErr) console.error('Cart.clearByUser error after order:', clearErr);
+                        return res.redirect(`/checkoutconfirm/${orderId}`);
+                    });
                 });
             });
         });

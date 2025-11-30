@@ -202,7 +202,6 @@ app.get('/manageOrders', checkAuthenticated, checkAdmin, orderController.listOrd
 app.get('/manageOrders/:id', checkAuthenticated, checkAdmin, orderController.viewOrder);
 app.post('/manageOrders/:id/status', checkAuthenticated, checkAdmin, orderController.updateStatus);
 
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
