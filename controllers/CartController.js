@@ -21,7 +21,7 @@ const CartController = {
         });
     },
 
-    // View cart
+    // Render cart.ejs in EDITABLE mode (reviewMode: false)
     viewCart(req, res) {
         if (!req.session.user) return res.status(401).send('Unauthorized');
 
@@ -33,7 +33,6 @@ const CartController = {
                 return res.status(500).send('Database error');
             }
 
-            // Normalize fields expected by views
             const items = (rows || []).map(r => ({
                 cartId: r.cartId,
                 productId: r.productId,
@@ -45,11 +44,110 @@ const CartController = {
 
             const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
 
+            // Render the editable cart page (cart.ejs)
             res.render('cart', {
                 items,
                 total,
                 user: req.session.user,
                 reviewMode: false
+            });
+        });
+    },
+
+    // Render cart.ejs in READ-ONLY review mode (reviewMode: true)
+    // This is used when the user wants to preview the cart but still on the cart template.
+    reviewOrder(req, res) {
+        if (!req.session.user) return res.status(401).send('Unauthorized');
+
+        const userId = req.session.user.id;
+
+        Cart.getAllByUser(userId, (err, rows) => {
+            if (err) {
+                console.error('Cart.getAllByUser error:', err);
+                return res.status(500).send('Database error');
+            }
+
+            const items = (rows || []).map(r => ({
+                cartId: r.cartId,
+                productId: r.productId,
+                productName: r.productName,
+                image: r.image,
+                price: Number(r.price || 0),
+                quantity: Number(r.quantity || 0)
+            }));
+
+            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+
+            // Render the cart template but in review/read-only mode
+            res.render('cart', {
+                items,
+                total,
+                user: req.session.user,
+                reviewMode: true
+            });
+        });
+    },
+
+    // Render checkout.ejs (non-editable preview before order creation)
+    checkoutPage(req, res) {
+        if (!req.session.user) return res.status(401).send('Unauthorized');
+
+        const userId = req.session.user.id;
+
+        Cart.getAllByUser(userId, (err, rows) => {
+            if (err) {
+                console.error('Cart.getAllByUser error:', err);
+                return res.status(500).send('Database error');
+            }
+
+            const items = (rows || []).map(r => ({
+                cartId: r.cartId,
+                productId: r.productId,
+                productName: r.productName,
+                image: r.image,
+                price: Number(r.price || 0),
+                quantity: Number(r.quantity || 0)
+            }));
+
+            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+
+            // Render the read-only checkout preview
+            res.render('checkout', {
+                items,
+                total,
+                user: req.session.user
+            });
+        });
+    },
+
+    // Legacy/read-only review page (renders reviewcart.ejs) - kept for compatibility
+    reviewCart(req, res) {
+        if (!req.session.user) return res.status(401).send('Unauthorized');
+
+        const userId = req.session.user.id;
+
+        Cart.getAllByUser(userId, (err, rows) => {
+            if (err) {
+                console.error('Cart.getAllByUser error:', err);
+                return res.status(500).send('Database error');
+            }
+
+            const items = (rows || []).map(r => ({
+                cartId: r.cartId,
+                productId: r.productId,
+                productName: r.productName,
+                image: r.image,
+                price: Number(r.price || 0),
+                quantity: Number(r.quantity || 0)
+            }));
+
+            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+
+            res.render('reviewcart', {
+                items,
+                total,
+                user: req.session.user,
+                reviewMode: true
             });
         });
     },
@@ -98,93 +196,9 @@ const CartController = {
             }
             res.redirect('/cart');
         });
-    },
-
-    // Review order (uses cart.ejs with reviewMode=true)
-    reviewOrder(req, res) {
-        if (!req.session.user) return res.status(401).send('Unauthorized');
-
-        const userId = req.session.user.id;
-
-        Cart.getAllByUser(userId, (err, rows) => {
-            if (err) {
-                console.error('Cart.getAllByUser error:', err);
-                return res.status(500).send('Database error');
-            }
-
-            const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
-                productName: r.productName,
-                image: r.image,
-                price: Number(r.price || 0),
-                quantity: Number(r.quantity || 0)
-            }));
-
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
-
-            res.render('cart', {
-                items,
-                total,
-                user: req.session.user,
-                reviewMode: true
-            });
-        });
-    },
-
-    // GET /checkout → show checkout confirmation page in REVIEW mode only (orderCompleted = false)
-    checkoutPage(req, res) {
-        if (!req.session.user) return res.status(401).send('Unauthorized');
-
-        const userId = req.session.user.id;
-
-        Cart.getAllByUser(userId, (err, rows) => {
-            if (err) {
-                console.error('Cart.getAllByUser error:', err);
-                return res.status(500).send("Database error");
-            }
-
-            const items = (rows || []).map(r => ({
-                cartId: r.cartId,
-                productId: r.productId,
-                productName: r.productName,
-                image: r.image,
-                price: Number(r.price || 0),
-                quantity: Number(r.quantity || 0)
-            }));
-
-            const total = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
-
-            // IMPORTANT: this controller only renders the REVIEW mode of checkoutconfirm.
-            // The completed mode (orderCompleted = true) is rendered by OrderController after order creation.
-            res.render("checkoutconfirm", {
-                items,
-                total,
-                user: req.session.user,
-                orderCompleted: false,
-                order: null
-            });
-        });
-    },
-
-    // Confirm order simply forwards user to checkout flow (OrderController handles creation)
-    confirmOrder(req, res) {
-        if (!req.session.user) return res.status(401).send('Unauthorized');
-
-        const confirmed = (req.body.confirm === 'yes' || req.body.confirm === 'true' || req.body.confirm === true);
-
-        if (confirmed) {
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('application/json') !== -1)) {
-                return res.json({ success: true, redirect: '/checkout' });
-            }
-            return res.redirect('/checkout');
-        } else {
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('application/json') !== -1)) {
-                return res.json({ success: false, redirect: '/cart' });
-            }
-            return res.redirect('/cart');
-        }
     }
+
+    // NOTE: All checkout/order creation logic is handled by OrderController.
 };
 
 module.exports = CartController;

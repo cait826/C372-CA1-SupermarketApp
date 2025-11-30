@@ -2,76 +2,92 @@ const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 
 const OrderController = {
-    // POST /checkout -> create order from current user's cart, insert order items, clear cart
-    checkout(req, res) {
-        if (!req.session.user) return res.status(401).send('Unauthorized');
 
+    // POST /checkoutconfirm -> create order from cart, insert items, clear cart, then redirect to confirmation page
+    confirmCheckout(req, res) {
+        if (!req.session.user) return res.status(401).send('Unauthorized');
         const userId = req.session.user.id;
 
-        // 1) Get cart items for user
-        Cart.getAllByUser(userId, (err, items) => {
+        // Load cart items
+        Cart.getAllByUser(userId, (err, cartItems) => {
             if (err) {
                 console.error('Cart.getAllByUser error:', err);
                 return res.status(500).send('Database error');
             }
 
-            if (!items || items.length === 0) {
+            if (!cartItems || cartItems.length === 0) {
                 return res.redirect('/cart');
             }
 
-            // 2) Build orderItems and calculate total
-            const orderItems = items.map(it => ({
-                productId: it.productId || it.products_id,
-                quantity: Number(it.quantity) || 0,
-                priceEach: Number(it.price || it.price_each || 0)
+            // Build orderItems expected by Order model
+            const orderItems = cartItems.map(it => ({
+                productId: Number(it.productId),
+                quantity: Number(it.quantity),
+                priceEach: Number(it.price)
             }));
 
-            const calculatedTotal = orderItems.reduce((sum, it) => sum + (it.priceEach * it.quantity), 0);
-
-            // 3) Create order (model handles transaction & inserting order_items)
-            Order.createOrder(userId, orderItems, (createErr, createResult, maybeTotal) => {
+            // Create order (model is transactional)
+            Order.createOrder(userId, orderItems, (createErr, maybeOrderId, maybeTotal) => {
                 if (createErr) {
                     console.error('Order.createOrder error:', createErr);
                     return res.status(500).send('Database error');
                 }
 
-                // 4) Normalize returned order id and total from model result
+                // Normalize returned orderId
                 let orderId = null;
-                let totalAmount = calculatedTotal;
-
-                if (createResult && typeof createResult === 'object') {
-                    orderId = createResult.orderId || createResult.insertId || createResult.id || null;
-                    totalAmount = createResult.total || createResult.total_price || maybeTotal || totalAmount;
-                } else if (typeof createResult === 'number') {
-                    orderId = createResult;
-                    totalAmount = maybeTotal || totalAmount;
-                } else if (maybeTotal && typeof maybeTotal === 'number') {
-                    totalAmount = maybeTotal;
+                if (typeof maybeOrderId === 'number') {
+                    orderId = maybeOrderId;
+                } else if (maybeOrderId && typeof maybeOrderId === 'object') {
+                    orderId = maybeOrderId.insertId || maybeOrderId.orderId || maybeOrderId.id || null;
+                } else if (typeof maybeTotal === 'number' && !maybeOrderId) {
+                    // fallback: some implementations might call (err, orderId) into second param
+                    orderId = maybeTotal;
                 }
 
                 if (!orderId) {
-                    console.error('OrderController.checkout: missing orderId from createResult', createResult, maybeTotal);
-                    return res.status(500).send('Failed to create order (no order id returned)');
+                    console.error('confirmCheckout: missing orderId', { maybeOrderId, maybeTotal });
+                    return res.status(500).send('Failed to create order');
                 }
 
-                // 5) Clear user's cart then render confirmation page WITH order details and purchased items
+                // Clear user's cart and redirect to confirmation page
                 Cart.clearByUser(userId, (clearErr) => {
-                    if (clearErr) console.error('Failed to clear cart after order:', clearErr);
-
-                    // Pass items (productName, image, price, quantity) so checkoutconfirm.ejs can render them
-                    return res.render('checkoutconfirm', {
-                        orderCompleted: true,
-                        order: { id: orderId, total_price: totalAmount },
-                        items: items,
-                        total: totalAmount,
-                        user: req.session.user
-                    });
+                    if (clearErr) console.error('Cart.clearByUser error after order:', clearErr);
+                    return res.redirect(`/checkoutconfirm/${orderId}`);
                 });
             });
         });
     },
 
-    // Admin: list all orders
+    // GET /checkoutconfirm/:orderId -> load order + items and render final confirmation
+    showCheckoutConfirm(req, res) {
+        if (!req.session.user) return res.status(401).send('Unauthorized');
+
+        const orderId = parseInt(req.params.orderId || req.params.id, 10);
+        if (Number.isNaN(orderId)) return res.status(400).send('Invalid order id');
+
+        Order.getById(orderId, (err, result) => {
+            if (err) {
+                console.error('Order.getById error:', err);
+                return res.status(500).send('Database error');
+            }
+            if (!result) return res.status(404).send('Order not found');
+
+            // Render using normalized shape from model
+            const orderObj = result.order || {};
+            const items = Array.isArray(result.items) ? result.items : [];
+            const total = Number(orderObj.total_price || 0);
+
+            return res.render('checkoutconfirm', {
+                orderCompleted: true,
+                order: orderObj,
+                items: items,
+                total: total,
+                user: req.session.user
+            });
+        });
+    },
+
+    // Admin: list all orders (unchanged)
     listOrders(req, res) {
         Order.getAll((err, rows) => {
             if (err) {
@@ -82,10 +98,13 @@ const OrderController = {
         });
     },
 
-    // View single order (user or admin)
+    // View single order (user or admin) — kept as-is
     viewOrder(req, res) {
-        const orderId = parseInt(req.params.id, 10);
-        if (Number.isNaN(orderId)) return res.status(400).send('Invalid order id');
+        const orderIdParam = req.params.orderId || req.params.id;
+        const orderId = parseInt(orderIdParam, 10);
+        if (Number.isNaN(orderId)) {
+            return res.status(400).send('Invalid order id');
+        }
 
         Order.getById(orderId, (err, order) => {
             if (err) {
@@ -94,13 +113,19 @@ const OrderController = {
             }
             if (!order) return res.status(404).send('Order not found');
 
-            const items = order.items || [];
-            res.render('invoice', { order, items, user: req.session.user });
+            // order may already be normalized by model as { order, items }
+            res.render('invoice', { order: order.order || order, items: order.items || [], user: req.session.user });
         });
     },
 
-    // Admin: update order status (Pending, In-Progress, Completed)
+    // Admin: update order status (unchanged behavior)
     updateStatus(req, res) {
+        // require authenticated admin user
+        if (!req.session.user) return res.status(401).send('Unauthorized');
+        const user = req.session.user;
+        const isAdmin = Boolean(user.isAdmin || user.is_admin || user.role === 'admin' || user.username === 'admin');
+        if (!isAdmin) return res.status(403).send('Forbidden');
+
         const orderId = parseInt(req.params.id, 10);
         if (Number.isNaN(orderId)) return res.status(400).send('Invalid order id');
 
@@ -113,7 +138,7 @@ const OrderController = {
                 console.error('Order.updateStatus error:', err);
                 return res.status(500).send('Database error');
             }
-            res.redirect('/admin/orders');
+            return res.redirect('/manageOrders');
         });
     }
 };

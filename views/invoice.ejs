@@ -32,10 +32,16 @@
                 <% items.forEach(item => { %>
                     <tr>
                         <td><%= item.productName %></td>
-                        <td><img src="/images/<%= item.image %>" width="80"></td>
+                        <td>
+                          <% if (item.image) { %>
+                            <img src="/images/<%= item.image %>" width="80" alt="<%= item.productName %>">
+                          <% } else { %>
+                            <span class="text-muted">No image</span>
+                          <% } %>
+                        </td>
                         <td><%= item.quantity %></td>
-                        <td>$<%= item.price_each %></td>
-                        <td>$<%= item.quantity * item.price_each %></td>
+                        <td>$<%= item.priceEach %></td>
+                        <td>$<%= item.subtotal %></td>
                     </tr>
                 <% }) %>
             </tbody>

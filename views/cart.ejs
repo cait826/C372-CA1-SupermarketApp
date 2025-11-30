@@ -8,73 +8,75 @@
 
 <body style="background-color: lightblue;">
     <div class="container mt-5">
-        <h2 class="text-center mb-4"><%= reviewMode ? "Review Order" : "Your Shopping Cart" %></h2>
+        <h2 class="text-center mb-4">Your Shopping Cart</h2>
 
-        <% if (items.length === 0) { %>
+        <% const itemsList = Array.isArray(items) ? items : []; %>
+        <% const displayTotal = Number(total || 0).toFixed(2); %>
+
+        <% if (itemsList.length === 0) { %>
             <p class="text-center text-muted">Your cart is empty.</p>
             <div class="text-center">
-                <a href="/shopping" class="btn btn-primary">Back to Shopping</a>
+                <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
             </div>
         <% } else { %>
 
-            <table class="table table-bordered table-hover text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Product</th>
-                        <th>Image</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Subtotal</th>
-                        <% if (!reviewMode) { %><th>Actions</th><% } %>
-                    </tr>
-                </thead>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-start">Product</th>
+                            <th>Image</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    <% items.forEach(item => { %>
-                    <tr>
-                        <td><%= item.productName %></td>
-                        <td><img src="/images/<%= item.image %>" width="70"></td>
-                        <td>
-                            <% if (!reviewMode) { %>
-                            <form action="/cart/update/<%= item.cartId %>" method="POST" class="d-inline">
-                                <input type="number" name="quantity" value="<%= item.quantity %>" min="1" class="form-control" style="width: 80px; margin: auto;" />
-                                <button type="submit" class="btn btn-sm btn-primary mt-2">Update</button>
-                            </form>
-                            <% } else { %>
-                                <%= item.quantity %>
-                            <% } %>
-                        </td>
+                    <tbody>
+                        <% itemsList.forEach(item => { 
+                            const price = Number(item.price || 0);
+                            const qty = Number(item.quantity || 0);
+                            const subtotal = price * qty;
+                        %>
+                        <tr>
+                            <td class="text-start"><%= item.productName %></td>
+                            <td>
+                                <% if (item.image) { %>
+                                    <img src="/images/<%= item.image %>" width="70" alt="<%= item.productName %>">
+                                <% } else { %>
+                                    <span class="text-muted">No image</span>
+                                <% } %>
+                            </td>
 
-                        <td>$<%= item.price %></td>
-                        <td>$<%= item.price * item.quantity %></td>
+                            <td>$<%= price.toFixed(2) %></td>
 
-                        <% if (!reviewMode) { %>
-                        <td>
-                            <form action="/cart/remove/<%= item.cartId %>" method="POST">
-                                <button class="btn btn-danger btn-sm">Remove</button>
-                            </form>
-                        </td>
-                        <% } %>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+                            <td>
+                                <form action="/cart/update/<%= item.cartId %>" method="POST" class="d-flex justify-content-center align-items-center">
+                                    <input type="number" name="quantity" value="<%= qty %>" min="1" class="form-control" style="width: 90px;">
+                                    <button type="submit" class="btn btn-sm btn-primary ms-2">Update</button>
+                                </form>
+                            </td>
 
-            <h3 class="text-end">Total: $<%= total %></h3>
+                            <td>$<%= subtotal.toFixed(2) %></td>
 
-            <div class="text-center mt-4">
-                <% if (!reviewMode) { %>
-                    <a href="/cart/clear" class="btn btn-danger">Clear Cart</a>
-
-                    <a href="/shopping" class="btn btn-primary ms-2">Add More Products</a>
-
-                    <a href="/cart/review" class="btn btn-success ms-2">Proceed to Checkout</a>
-                <% } else { %>
-                    <a href="/cart" class="btn btn-warning">Go Back</a>
-                    <a href="/checkout" class="btn btn-success ms-2">Confirm Order</a>
-                <% } %>
+                            <td>
+                                <form action="/cart/remove/<%= item.cartId %>" method="POST" onsubmit="return confirm('Remove this item?');">
+                                    <button class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
             </div>
 
+            <h3 class="text-end">Total: $<%= displayTotal %></h3>
+            <div class="text-center mt-4">
+                <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
+                <a href="/cart/clear" class="btn btn-danger ms-2" onclick="return confirm('Clear cart?');">Clear Cart</a>
+                <a href="/reviewcart" class="btn btn-success ms-2">Review Order</a>
+            </div>
         <% } %>
     </div>
 </body>

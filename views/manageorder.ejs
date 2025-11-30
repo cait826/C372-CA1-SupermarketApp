@@ -16,6 +16,7 @@
 
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/inventory">View Inventory</a></li>
                     <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
                     <li class="nav-item"><a class="nav-link" href="/manageuser">Manage Users</a></li>
                     <li class="nav-item"><a class="nav-link active" href="/manageOrders">Manage Orders</a></li>
@@ -52,7 +53,7 @@
                         <td><%= order.order_date.toLocaleString() %></td>
 
                         <td>
-                            <select name="status" class="form-select">
+                            <select name="status" class="form-select" <%= order.status === "Completed" ? "disabled" : "" %>>
                                 <option value="Pending" <%= order.status === "Pending" ? "selected" : "" %>>Pending</option>
                                 <option value="In-Progress" <%= order.status === "In-Progress" ? "selected" : "" %>>In-Progress</option>
                                 <option value="Completed" <%= order.status === "Completed" ? "selected" : "" %>>Completed</option>
@@ -60,7 +61,7 @@
                         </td>
 
                         <td>
-                            <button type="submit" class="btn btn-warning btn-sm">Save</button>
+                            <button type="submit" class="btn <%= order.status === "Completed" ? "btn-secondary" : "btn-warning" %> btn-sm" <%= order.status === "Completed" ? "disabled" : "" %>>Save</button>
                         </td>
                     </form>
 

@@ -54,6 +54,14 @@ const Product = {
             if (err) return callback(err);
             callback(null, results);
         });
+    },
+
+    subtractQuantity: function(productId, quantity, callback) {
+        const sql = 'UPDATE products SET quantity = GREATEST(quantity - ?, 0) WHERE id = ?';
+        db.query(sql, [quantity, productId], (err, result) => {
+            if (err) return callback(err);
+            return callback(null, result);
+        });
     }
 };
 
