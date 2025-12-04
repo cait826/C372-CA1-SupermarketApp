@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Leave a Review</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: lightblue; }
+    .card { max-width: 760px; margin: 2.5rem auto; }
+    .star { font-size: 1.8rem; color: #e9ecef; cursor: pointer; user-select: none; }
+    .star.selected { color: #f6c02d; }
+    textarea.form-control { min-height: 140px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title mb-4 text-center">Leave a Review</h3>
+
+        <form method="POST" action="/review/<%= orderId %>">
+          <input type="hidden" name="orderId" value="<%= orderId %>">
+
+          <div class="mb-3">
+            <label class="form-label"><strong>Order ID</strong></label>
+            <div class="form-control-plaintext"><%= orderId %></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label"><strong>Rating</strong></label>
+            <div class="d-flex gap-2 align-items-center">
+              <input type="radio" name="rating" id="r5" value="5" class="d-none" required>
+              <label for="r5" class="star" data-value="5" title="5 stars">★</label>
+
+              <input type="radio" name="rating" id="r4" value="4" class="d-none">
+              <label for="r4" class="star" data-value="4" title="4 stars">★</label>
+
+              <input type="radio" name="rating" id="r3" value="3" class="d-none">
+              <label for="r3" class="star" data-value="3" title="3 stars">★</label>
+
+              <input type="radio" name="rating" id="r2" value="2" class="d-none">
+              <label for="r2" class="star" data-value="2" title="2 stars">★</label>
+
+              <input type="radio" name="rating" id="r1" value="1" class="d-none">
+              <label for="r1" class="star" data-value="1" title="1 star">★</label>
+            </div>
+            <div class="form-text mt-1">Select 1–5 stars</div>
+          </div>
+
+          <div class="mb-4">
+            <label for="comment" class="form-label"><strong>Comment</strong></label>
+            <textarea id="comment" name="comment" class="form-control" placeholder="Write your feedback (optional)"></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+            <a href="/order_history" class="btn btn-secondary">Back to Order History</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const stars = Array.from(document.querySelectorAll('.star'));
+      const radios = Array.from(document.querySelectorAll('input[name="rating"]'));
+
+      function updateVisual(value) {
+        stars.forEach(s => {
+          const v = Number(s.getAttribute('data-value'));
+          s.classList.toggle('selected', v <= value);
+        });
+      }
+
+      stars.forEach(s => {
+        s.addEventListener('click', () => {
+          const val = Number(s.getAttribute('data-value'));
+          const radio = document.querySelector('input[name="rating"][value="' + val + '"]');
+          if (radio) {
+            radio.checked = true;
+            updateVisual(val);
+          }
+        });
+        s.addEventListener('mouseover', () => {
+          updateVisual(Number(s.getAttribute('data-value')));
+        });
+      });
+
+      const container = document.querySelector('.card-body');
+      if (container) {
+        container.addEventListener('mouseout', () => {
+          const sel = radios.find(r => r.checked);
+          updateVisual(sel ? Number(sel.value) : 0);
+        });
+      }
+
+      radios.forEach(r => r.addEventListener('change', () => updateVisual(Number(r.value))));
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <%- include("./partials/footer") %>
+</body>
+</html>

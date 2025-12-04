@@ -14,6 +14,8 @@ const Order = require('./models/Order');
 const Cart = require('./models/Cart');
 const cartController = require('./controllers/CartController');
 const orderController = require('./controllers/OrderController');
+const ReviewController = require('./controllers/ReviewController');
+const FavoriteController = require('./controllers/FavoriteController');
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -172,8 +174,11 @@ app.post('/checkoutconfirm', checkAuthenticated, orderController.confirmCheckout
 // Confirmation page showing saved order
 app.get('/checkoutconfirm/:orderId', checkAuthenticated, orderController.showCheckoutConfirm);
 
-// Invoice view for a specific order
+// Invoice view for a specific order (user must be authenticated)
 app.get('/invoice/:orderId', checkAuthenticated, orderController.viewOrder);
+
+// User order history -> authenticated users only (no checkAdmin)
+app.get('/order_history', checkAuthenticated, orderController.orderHistory);
 
 // -----------------------
 // --- ADMIN ROUTES ---
@@ -197,15 +202,28 @@ app.post('/promoteUser/:id', checkAuthenticated, checkAdmin, userController.prom
 app.post('/deleteUser/:id', checkAuthenticated, checkAdmin, userController.deleteUser);
 app.post('/addUser', checkAuthenticated, checkAdmin, userController.addUser);
 
-// Admin order management
+// Admin order management (admin-only routes)
 app.get('/manageOrders', checkAuthenticated, checkAdmin, orderController.listOrders);
-app.get('/manageOrders/:id', checkAuthenticated, checkAdmin, orderController.viewOrder);
+app.get('/manageOrders/:id', checkAuthenticated, checkAdmin, orderController.viewOrderAdmin);
 app.post('/manageOrders/:id/status', checkAuthenticated, checkAdmin, orderController.updateStatus);
 
+// Admin review management (admin only) — use adminList exported by ReviewController
+app.get('/manageReviews', checkAuthenticated, checkAdmin, ReviewController.adminList);
+
+// Logout
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 });
+
+// User review routes (authenticated users)
+app.get('/review/:orderId', checkAuthenticated, ReviewController.showForm);
+app.post('/review/:orderId', checkAuthenticated, ReviewController.submit);
+
+// Favorites routes
+app.get('/favorites', checkAuthenticated, FavoriteController.list);
+app.post('/favorite/:productId', checkAuthenticated, FavoriteController.add);
+app.post('/favorite/remove/:productId', checkAuthenticated, FavoriteController.remove);
 
 // Start server
 const PORT = process.env.PORT || 3000;

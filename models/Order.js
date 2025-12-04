@@ -26,15 +26,12 @@ const Order = {
             VALUES ?
         `;
 
-        // Begin transaction on single connection (no pool)
         db.beginTransaction((txErr) => {
             if (txErr) return callback(txErr);
 
             db.query(insertOrderSql, [userId, total], (insErr, insRes) => {
                 if (insErr) {
-                    return db.rollback(() => {
-                        return callback(insErr);
-                    });
+                    return db.rollback(() => callback(insErr));
                 }
 
                 const orderId = insRes.insertId;
@@ -48,9 +45,7 @@ const Order = {
 
                 db.query(insertItemsSql, [values], (itemsErr) => {
                     if (itemsErr) {
-                        return db.rollback(() => {
-                            return callback(itemsErr);
-                        });
+                        return db.rollback(() => callback(itemsErr));
                     }
 
                     // Deduct stock for each ordered item (prevent negative stock using GREATEST)
@@ -62,9 +57,7 @@ const Order = {
                             // all updates done -> commit
                             return db.commit((commitErr) => {
                                 if (commitErr) {
-                                    return db.rollback(() => {
-                                        return callback(commitErr);
-                                    });
+                                    return db.rollback(() => callback(commitErr));
                                 }
                                 return callback(null, orderId, total);
                             });
@@ -79,16 +72,13 @@ const Order = {
 
                         db.query(updateProdSql, [qty, pid], (prodErr) => {
                             if (prodErr) {
-                                return db.rollback(() => {
-                                    return callback(prodErr);
-                                });
+                                return db.rollback(() => callback(prodErr));
                             }
                             // proceed to next
                             doNextUpdate();
                         });
                     };
 
-                    // start decrement loop
                     doNextUpdate();
                 });
             });
@@ -152,7 +142,6 @@ const Order = {
                     };
                 });
 
-                // Construct order object including username
                 const orderObj = {
                     id: o.id,
                     userId: o.users_id,
@@ -170,7 +159,6 @@ const Order = {
     // Update order status
     updateStatus(orderId, status, callback) {
         const cb = (typeof callback === 'function') ? callback : function() {};
-        // First read previous status
         const selectSql = 'SELECT status FROM orders WHERE id = ? LIMIT 1';
         db.query(selectSql, [orderId], (selErr, selRows) => {
             if (selErr) return cb(selErr);
@@ -187,7 +175,6 @@ const Order = {
                     const itemsSql = 'SELECT products_id, quantity FROM orders_items WHERE orders_id = ?';
                     db.query(itemsSql, [orderId], (itemsErr, itemsRows) => {
                         if (itemsErr) {
-                            // Stock update failed; still return the order update result but surface the items error optionally
                             console.error('Failed to fetch order items for stock update:', itemsErr);
                             return cb(null, result);
                         }
@@ -196,7 +183,6 @@ const Order = {
                             return cb(null, result);
                         }
 
-                        // Perform best-effort stock decrements for each item; prevent negative stock using GREATEST(...)
                         let pending = itemsRows.length;
                         itemsRows.forEach(item => {
                             const qty = Number(item.quantity || 0);
@@ -221,6 +207,21 @@ const Order = {
                     return cb(null, result);
                 }
             });
+        });
+    },
+
+    // Get all orders for a specific user (by users_id)
+    // callback(err, rows) where rows contain: id, users_id, total_price, order_date, status
+    getByUserId(userId, callback) {
+        const sql = `
+            SELECT id, users_id, total_price, order_date, status
+            FROM orders
+            WHERE users_id = ?
+            ORDER BY order_date DESC
+        `;
+        db.query(sql, [userId], (err, rows) => {
+            if (err) return callback(err);
+            return callback(null, rows);
         });
     }
 };

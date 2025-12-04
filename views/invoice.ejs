@@ -4,54 +4,136 @@
     <meta charset="UTF-8">
     <title>Invoice</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background-color: lightblue; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+      .invoice-wrap { padding: 3rem 0; }
+      .invoice-card { background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(16,24,40,0.08); padding: 1.5rem; }
+      .invoice-header { border-bottom: 1px solid #eef3fb; padding-bottom: 1rem; margin-bottom: 1rem; }
+      .logo-placeholder { width:120px; height:48px; background:#e9f5ff; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#0d6efd; font-weight:700; }
+      .bill-box, .summary-box { background:#fbfdff; border-radius:8px; padding:1rem; }
+      .product-row { border-radius:10px; background:#ffffff; padding:12px; box-shadow: 0 4px 12px rgba(16,24,40,0.04); margin-bottom:12px; align-items:center; }
+      .product-img { width:90px; height:90px; object-fit:cover; border-radius:8px; }
+      .muted { color:#6c757d; }
+      .divider { height:1px; background:#f1f5f9; margin:1rem 0; border-radius:2px; }
+      .total-box { background:#fff; border-radius:10px; padding:1rem; box-shadow:0 8px 20px rgba(16,24,40,0.04); }
+      .btn-primary-ghost { background: transparent; border: 1px solid rgba(13,110,253,0.12); color: #0d6efd; }
+    </style>
 </head>
 
-<body style="background-color: lightblue;">
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Order Invoice</h2>
-
-        <div class="card p-4 shadow">
-            <h4>Order #<%= order.id %></h4>
-            <p><strong>Customer:</strong> <%= order.username %></p>
-            <p><strong>Date:</strong> <%= order.order_date.toLocaleString() %></p>
-            <p><strong>Status:</strong> <%= order.status %></p>
+<body>
+  <div class="container invoice-wrap">
+    <div class="invoice-card">
+      <div class="d-flex justify-content-between invoice-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="logo-placeholder">🛒</div>
+          <div>
+            <h4 class="mb-0">Supermarket App</h4>
+            <small class="muted">Receipt / Invoice</small>
+          </div>
         </div>
 
-        <table class="table table-bordered mt-4 text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>Product</th>
-                    <th>Image</th>
-                    <th>Qty</th>
-                    <th>Price Each</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <% items.forEach(item => { %>
-                    <tr>
-                        <td><%= item.productName %></td>
-                        <td>
-                          <% if (item.image) { %>
-                            <img src="/images/<%= item.image %>" width="80" alt="<%= item.productName %>">
-                          <% } else { %>
-                            <span class="text-muted">No image</span>
-                          <% } %>
-                        </td>
-                        <td><%= item.quantity %></td>
-                        <td>$<%= item.priceEach %></td>
-                        <td>$<%= item.subtotal %></td>
-                    </tr>
-                <% }) %>
-            </tbody>
-        </table>
-
-        <h3 class="text-end">Total: $<%= order.total_price %></h3>
-
-        <div class="text-center mt-4">
-            <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
+        <div class="text-end">
+          <h5 class="mb-1">Invoice #<%= order.id %></h5>
+          <div class="muted" style="font-size:.95rem;"><%= order.order_date.toLocaleString() %></div>
+          <div class="mt-2"><span class="badge bg-light text-dark">Status: <%= order.status %></span></div>
         </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="bill-box">
+            <h6 class="mb-2">Bill To</h6>
+            <p class="mb-1"><strong><%= order.username %></strong></p>
+            <!-- You can add more customer details here if available -->
+            <p class="muted mb-0">Thank you for your purchase! A confirmation email has been sent.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="summary-box">
+            <h6 class="mb-2">Order Summary</h6>
+            <div class="d-flex justify-content-between">
+              <div class="muted">Invoice #</div>
+              <div><strong><%= order.id %></strong></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="muted">Date</div>
+              <div class="muted"><%= order.order_date.toLocaleString() %></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div class="muted">Status</div>
+              <div class="muted"><%= order.status %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h5 class="mb-3">Items</h5>
+
+      <!-- Product list as modern rows -->
+      <% items.forEach(item => { %>
+        <div class="d-flex product-row">
+          <div class="flex-shrink-0">
+            <% if (item.image) { %>
+              <img src="/images/<%= item.image %>" alt="<%= item.productName %>" class="product-img">
+            <% } else { %>
+              <div class="d-flex align-items-center justify-content-center bg-light border rounded product-img">
+                <span class="text-muted small">No image</span>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1"><%= item.productName %></h6>
+            <div class="muted" style="font-size:.9rem;">Qty: <%= item.quantity %></div>
+            <div class="muted" style="font-size:.9rem;">Price each: $<%= item.priceEach %></div>
+          </div>
+
+          <div class="text-end" style="min-width:120px">
+            <div class="muted small">Subtotal</div>
+            <div style="font-weight:700;">$<%= item.subtotal %></div>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <div class="mt-2">
+            <a href="/shopping" class="btn btn-outline-secondary">← Continue Shopping</a>
+            <button class="btn btn-primary-ghost ms-2">Download PDF</button>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="total-box float-md-end">
+            <div class="d-flex justify-content-between mb-2">
+              <div class="muted">Subtotal</div>
+              <div>$<%= order.total_price %></div>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <div class="muted">Shipping</div>
+              <div class="muted">Calculated at checkout</div>
+            </div>
+            <div class="divider"></div>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="muted small">Total</div>
+                <div class="muted small">Amount due</div>
+              </div>
+              <div style="font-size:1.35rem; font-weight:800; color:#0d6efd;">$<%= order.total_price %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-center muted">
+        <small>Thanks for shopping with Supermarket App.</small>
+      </div>
     </div>
+  </div>
+  <%- include("./partials/footer") %>
 </body>
+
 </html>

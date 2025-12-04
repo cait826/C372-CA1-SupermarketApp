@@ -4,126 +4,255 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <style>
-    body {
-      background-color: lightblue;
+    :root{
+      --accent: #0d6efd;
+      --card-bg: #ffffff;
+      --muted: #6c757d;
+      --page-bg: lightblue;
     }
+
+    body { background-color: var(--page-bg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#0b2540; }
+
+    /* Header */
+    .dashboard-header { padding: 1.5rem 0; }
+    .dashboard-title { font-weight:700; font-size:1.35rem; }
+    .subtle { color:var(--muted); }
+
+    /* Search & filter */
+    .controls-row { gap: .75rem; margin-bottom:1rem; }
+    .search-input .form-control { border-radius: .75rem 0 0 .75rem; }
+    .search-btn { border-radius: 0 .75rem .75rem 0; }
+    .filter-select { border-radius: .75rem; }
+
+    /* Product list area */
+    .inventory-wrap { padding-bottom: 4rem; }
+    .products-grid { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+    @media (min-width: 768px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1200px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: .9rem;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(16,24,40,0.09); }
+
+    .product-thumb { width:110px; height:96px; border-radius:8px; overflow:hidden; flex-shrink:0; background:#f8f9fb; display:flex; align-items:center; justify-content:center; }
+    .product-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+
+    .product-info { flex:1; min-width:0; }
+    .product-name { font-weight:700; color:#0b2540; text-decoration:none; }
+    .meta-row { display:flex; gap:1rem; flex-wrap:wrap; color:var(--muted); font-size:.92rem; margin-top:.35rem; }
+
+    .price { font-weight:800; color:var(--accent); font-size:1.05rem; }
+    .qty { color:var(--muted); }
+
+    .card-actions { display:flex; flex-direction:column; gap:.5rem; align-items:flex-end; min-width:140px; }
+    @media (max-width:767.98px){ .card-actions { flex-direction:row; align-items:center; min-width:0; } }
+
+    .btn-edit { background:#fff3cd; color:#856404; border:1px solid rgba(0,0,0,0.04); }
+    .btn-delete { background:#fff; color:#dc3545; border:1px solid rgba(220,53,69,0.08); }
+
+    /* Table fallback (kept but hidden on wide screens) */
+    .legacy-table { width:100%; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(16,24,40,0.06); }
+    @media (max-width: 767.98px) {
+      .products-grid { display:block; }
+    }
+
+    .header-actions { display:flex; gap:.5rem; align-items:center; }
   </style>
+
   <title>Supermarket App</title>
 </head>
 <body>
-  <body style="background-color: lightblue">
-    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Supermarket App</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-          <ul class="navbar-nav">
-            <li class = "nav-item">
-                <a class="nav-link" href="/inventory" style="color: #4a9eff;">View Inventory</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/addProduct" style="color: #4a9eff;">Add Product</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/manageuser" style="color: #4a9eff;">Manage Users</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/manageOrders" style="color: #4a9eff;">Manage Orders</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/logout" style="color: #4a9eff; ">Logout</a>
-            </li>
-          </ul>
-        </div>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Supermarket App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+          <li class = "nav-item">
+              <a class="nav-link" href="/inventory" style="color: #4a9eff;">View Inventory</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/addProduct" style="color: #4a9eff;">Add Product</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/manageuser" style="color: #4a9eff;">Manage Users</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/manageOrders" style="color: #4a9eff;">Manage Orders</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/manageReviews" style="color: #4a9eff;">Manage Reviews</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout" style="color: #4a9eff; ">Logout</a>
+          </li>
+        </ul>
       </div>
-    </nav>
+    </div>
+  </nav>
 
+  <div class="container inventory-wrap mt-4">
+    <div class="d-flex justify-content-between align-items-center dashboard-header">
+      <div>
+        <div class="dashboard-title">Inventory Management</div>
+        <div class="subtle">Welcome, <strong><%= user.username %></strong> — <span class="text-capitalize"><%= user.role %></span></div>
+      </div>
 
-  <div class="container">
-    <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
-    <br>
-    <div class="text-center"><h2>Products from Supermarket App Database</h2></div>
-    <br>
+      <div class="header-actions">
+        <a href="/addProduct" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-1"></i> Add Product
+        </a>
+      </div>
+    </div>
 
-    <!-- this is the search function -->
-     <form action="/products/search" method="GET" class="search-form">
-      <input 
-          type="text" 
-          name="q" 
-          placeholder="Search products..." 
-          value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
-          required
-      >
-      <button type="submit">Search</button>
+    <div class="row mb-3 align-items-center controls-row">
+      <div class="col-md-6">
+        <!-- search form (kept logic unchanged) -->
+        <form action="/products/search" method="GET" class="search-form">
+          <div class="input-group search-input">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              name="q"
+              class="form-control border-start-0"
+              placeholder="Search products..."
+              value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+              required>
+            <button type="submit" class="btn btn-outline-primary search-btn">Search</button>
+            <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+              <a href="<%= user.role === 'admin' ? '/inventory' : '/shopping' %>" class="btn btn-link ms-2">Clear</a>
+            <% } %>
+          </div>
+        </form>
+
         <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
-        <a href="<%= user.role === 'admin' ? '/inventory' : '/shopping' %>">Clear Search</a>
-      <% } %>
-      </form>
-
-      <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
-        <p class="search-results">
-        Found <%= products.length %> result(s) for "<%= searchQuery %>"
-        </p>
-      <% } %>
-
-      <!---filter function-->
-       <form action="/products" method="GET" class="filter-form">
-        <select name="category" class="form-select" onchange="this.form.submit()">
-          <option value="All" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'All') ? 'selected' : '' %>>All Categories</option>
-          <option value="Produce" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Produce') ? 'selected' : '' %>>Produce</option>
-          <option value="Drinks" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Drinks') ? 'selected' : '' %>>Drinks</option>
-          <option value="Others" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Others') ? 'selected' : '' %>>Others</option>
-        </select>
-        <% if (typeof selectedCategory !== 'undefined' && selectedCategory !== 'All') { %>
-          <a href="/inventory">Clear Filter</a>
+          <p class="subtle small mt-2">Found <strong><%= products.length %></strong> result(s) for "<em><%= searchQuery %></em>"</p>
         <% } %>
-      </form>
+      </div>
 
-      <!-- Search Results Message -->
+      <div class="col-md-3">
+        <!-- filter form (kept logic unchanged) -->
+        <form action="/products" method="GET" class="filter-form">
+          <div class="input-group">
+            <label class="input-group-text bg-white border-end-0"><i class="bi bi-funnel"></i></label>
+            <select name="category" class="form-select filter-select" onchange="this.form.submit()">
+              <option value="All" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'All') ? 'selected' : '' %>>All Categories</option>
+              <option value="Produce" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Produce') ? 'selected' : '' %>>Produce</option>
+              <option value="Drinks" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Drinks') ? 'selected' : '' %>>Drinks</option>
+              <option value="Others" <%= (typeof selectedCategory !== 'undefined' && selectedCategory === 'Others') ? 'selected' : '' %>>Others</option>
+            </select>
+            <% if (typeof selectedCategory !== 'undefined' && selectedCategory !== 'All') { %>
+              <a href="/inventory" class="btn btn-link ms-2">Clear Filter</a>
+            <% } %>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-3 text-md-end mt-2 mt-md-0">
+        <div class="subtle small">Total products: <strong><%= products.length %></strong></div>
+      </div>
+    </div>
+
+    <!-- Optional duplicate search-results block (kept as in original) -->
     <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
-      <p class="search-results">
+      <p class="search-results subtle small">
         Found <%= products.length %> result(s) for "<%= searchQuery %>"
       </p>
     <% } %>
 
-      <!-- Filter Results Message -->
+    <!-- Optional filter-results message (kept as in original) -->
     <% if (typeof selectedCategory !== 'undefined' && selectedCategory !== 'All') { %>
-      <p class="filter-results">
+      <p class="filter-results subtle small mb-3">
         Showing products in category: "<%= selectedCategory %>"
       </p>
     <% } %>
 
-    <br>
-    <table class="table table-hover small text-center">
-      <thead>
-          <tr>
-            <th width="100">Product Name</th>
-            <th width="100">Product Image</th>
-            <th width="50">Quantity</th>
-            <th width="50">Price</th>
-            <th width="50">Edit</th>
-            <th width="50">Delete</th>
-          </tr>
-      </thead>
-      <tbody>
-        <% for(let i=0; i < products.length; i++) { %>
-          <tr>
-            <td><a href="/product/<%= products[i].id %>" ><%= products[i].productName %></a></td>
-            <td><img src = "/images/<%= products[i].image %>" width="20%"></td>
-            <td><%= products[i].quantity %></td>
-            <td>$<%= products[i].price.toFixed(2) %></td>
-            <!-- Edit Link -->
-            <td><a href="/updateProduct/<%= products[i].id %>">Edit</a></td>
-            <!-- Delete Link -->
-            <td><a href="/deleteProduct/<%= products[i].id %>" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a></td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+    <!-- Product cards grid (keeps original loop and routes/actions unchanged) -->
+    <div class="products-grid" aria-live="polite">
+      <% for(let i=0; i < products.length; i++) { %>
+        <div class="product-card">
+          <div class="product-thumb">
+            <% if (products[i].image) { %>
+              <img src="/images/<%= products[i].image %>" alt="<%= products[i].productName %>">
+            <% } else { %>
+              <div class="text-muted small">No image</div>
+            <% } %>
+          </div>
+
+          <div class="product-info">
+            <a href="/product/<%= products[i].id %>" class="product-name"><%= products[i].productName %></a>
+            <div class="meta-row">
+              <div class="price">$<%= products[i].price.toFixed(2) %></div>
+              <div class="qty">Stock: <strong><%= products[i].quantity %></strong></div>
+              <% if (products[i].category) { %>
+                <div class="subtle">Category: <%= products[i].category %></div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <a href="/updateProduct/<%= products[i].id %>" class="btn btn-sm btn-edit d-inline-flex align-items-center">
+              <i class="bi bi-pencil-fill me-1"></i> Edit
+            </a>
+
+            <a href="/deleteProduct/<%= products[i].id %>" onclick="return confirm('Are you sure you want to delete this product?')" class="btn btn-sm btn-delete d-inline-flex align-items-center">
+              <i class="bi bi-trash me-1"></i> Delete
+            </a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Legacy table retained visually for accessibility/responsiveness (kept logic and loop) -->
+    <div class="mt-4 d-none">
+      <table class="table legacy-table small text-center">
+        <thead>
+            <tr>
+              <th width="100">Product Name</th>
+              <th width="100">Product Image</th>
+              <th width="50">Quantity</th>
+              <th width="50">Price</th>
+              <th width="50">Edit</th>
+              <th width="50">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+          <% for(let i=0; i < products.length; i++) { %>
+            <tr>
+              <td><a href="/product/<%= products[i].id %>" ><%= products[i].productName %></a></td>
+              <td><img src = "/images/<%= products[i].image %>" width="20%"></td>
+              <td><%= products[i].quantity %></td>
+              <td>$<%= products[i].price.toFixed(2) %></td>
+              <!-- Edit Link -->
+              <td><a href="/updateProduct/<%= products[i].id %>">Edit</a></td>
+              <!-- Delete Link -->
+              <td><a href="/deleteProduct/<%= products[i].id %>" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
   </div>
+
+  <%- include("./partials/footer") %>
 </body>
 </html>

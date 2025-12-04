@@ -1,61 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-      body {
-        background-color: lightblue;
-      }
-    </style>
-    <title>Supermarket App</title>
-  </head>
-  <body>
-      <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="/">Supermarket App</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="collapsibleNavbar">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="/register" style="color: #4a9eff;">Register</a>
-              </li> 
-              <li class="nav-item">
-                <a class="nav-link" href="/Login" style="color: #4a9eff;">Login</a>
-              </li> 
-            </ul>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supermarket App — Login</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    :root{
+      --brand-dark: #08192b;
+      --brand-mid: #0b233f;
+      --accent: #0d6efd;
+      --muted: #6c757d;
+      --card-radius: 12px;
+    }
+
+    html,body { height:100%; }
+    body {
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #0b2540;
+      background: linear-gradient(180deg, rgba(224,242,255,0.6), rgba(218,237,255,0.45));
+    }
+
+    /* Navbar visual improvements (structure unchanged) */
+    .site-nav {
+      background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
+      box-shadow: 0 6px 20px rgba(11,35,64,0.12);
+    }
+    .site-nav .navbar-brand {
+      background: #fff;
+      color: #0b2540;
+      padding: .35rem .75rem;
+      border-radius: 8px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      gap:.6rem;
+    }
+    .site-nav .nav-link { color: rgba(150,200,255,0.95) !important; }
+    .site-nav .nav-link:hover { color:#fff !important; text-decoration:underline; }
+
+    /* Centered login layout */
+    .auth-wrapper {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 920px;
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      box-shadow: 0 20px 60px rgba(11,35,64,0.12);
+      background: linear-gradient(180deg,#ffffff,#fbfdff);
+      border: 1px solid rgba(13,110,253,0.04);
+    }
+
+    @media(min-width: 992px){
+      .auth-card { grid-template-columns: 480px 1fr; }
+    }
+
+    .auth-visual {
+      background: linear-gradient(180deg, rgba(13,110,253,0.06), rgba(224,242,255,0.55));
+      padding: 2rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+      gap:.75rem;
+    }
+
+    .auth-visual h2 { font-size:1.5rem; margin:0; font-weight:800; color:var(--brand-mid); }
+    .auth-visual p { margin:0; color:var(--muted); }
+
+    .auth-form {
+      padding: 2rem;
+    }
+
+    .brand-badge {
+      width:40px; height:40px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg,#e9f5ff,#dff0ff); color:var(--accent); font-weight:800;
+      margin-right:.6rem;
+    }
+
+    .form-title { font-weight:800; font-size:1.25rem; margin-bottom:.25rem; }
+    .form-sub { color:var(--muted); margin-bottom:1rem; }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 .15rem rgba(13,110,253,0.08);
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      border-radius: 10px;
+      padding: .6rem 1rem;
+      font-weight:700;
+    }
+
+    .helper-row { display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-top:.5rem; }
+    .helper-row a { color:var(--accent); text-decoration:none; }
+    .helper-row a:hover { text-decoration:underline; }
+
+    .alert { border-radius:10px; }
+
+    @media(max-width:991.98px){
+      .auth-visual { align-items:center; text-align:center; padding:1.5rem; }
+      .auth-form { padding:1.5rem; }
+      .helper-row { flex-direction:column; align-items:flex-start; gap:.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-sm site-nav">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <span class="brand-badge">🛒</span>
+        <span>Supermarket App</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/register" style="color: #4a9eff;">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/Login" style="color: #4a9eff;">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-visual">
+        <h2>Welcome Back</h2>
+        <p>Log in to manage orders, shop, and access your account.</p>
+
+        <div class="mt-3">
+          <strong style="color:var(--brand-mid);">Why sign in?</strong>
+          <ul class="small" style="color:var(--muted); margin-top:.5rem; padding-left:1rem;">
+            <li>Faster checkout</li>
+            <li>Order tracking</li>
+            <li>Saved preferences</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="auth-form">
+        <div class="d-flex align-items-center mb-3">
+          <div class="brand-badge">🛒</div>
+          <div>
+            <div class="form-title">Login to Your Account</div>
+            <div class="form-sub">Enter your credentials to continue</div>
           </div>
         </div>
-      </nav>
-    <div class="container">
-        <h1 class="mt-5">Login</h1>
+
         <% if (errors && errors.length > 0) { %>
-            <div class="alert alert-danger">
-                <% errors.forEach(function(error) { %>
-                    <p><%= error %></p>
-                <% }); %>
-            </div>
+          <div class="alert alert-danger" role="alert">
+            <% errors.forEach(function(error) { %>
+              <div><i class="bi bi-exclamation-circle-fill me-2"></i><%= error %></div>
+            <% }); %>
+          </div>
         <% } %>
+
         <% if (messages && messages.length > 0) { %>
-            <div class="alert alert-success">
-                <% messages.forEach(function(message) { %>
-                    <p><%= message %></p>
-                <% }); %>
-            </div>
+          <div class="alert alert-success" role="alert">
+            <% messages.forEach(function(message) { %>
+              <div><i class="bi bi-check-circle-fill me-2"></i><%= message %></div>
+            <% }); %>
+          </div>
         <% } %>
-        <form action="/login" method="POST" class="mt-4">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" class="form-control" required>
+
+        <form action="/login" method="POST" class="mt-3">
+          <div class="mb-3">
+            <label for="email" class="form-label small text-uppercase">Email</label>
+            <input type="email" id="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required>
+          </div>
+
+          <div class="mb-2">
+            <label for="password" class="form-label small text-uppercase">Password</label>
+            <input type="password" id="password" name="password" class="form-control form-control-lg" placeholder="Enter your password" required>
+          </div>
+
+          <div class="helper-row mt-2">
+            <div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="rememberMe" disabled>
+                <label class="form-check-label small text-muted" for="rememberMe">Remember me (UI only)</label>
+              </div>
             </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" class="form-control" required>
+
+            <div>
+              <a href="/register" class="small">Create account</a>
+              <span class="text-muted mx-2">•</span>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+
+          <div class="mt-3 d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">Login</button>
+          </div>
         </form>
+      </div>
     </div>
+  </div>
+  <%- include("./partials/footer") %>
 </body>
 </html>

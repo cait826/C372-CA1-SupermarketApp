@@ -1,83 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Your Cart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Your Cart</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #eef7ff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .cart-container { padding: 2.5rem 0; }
+    .item-card { background: #ffffff; border-radius: 12px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); padding: 1rem; margin-bottom: 1rem; }
+    .product-img { width: 120px; height: 100px; object-fit: cover; border-radius: 8px; }
+    .qty-input { width: 96px; }
+    .summary-card { background: #fff; border-radius: 12px; padding: 1.25rem; box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
+    .summary-card .total { font-size: 1.5rem; font-weight: 700; color: #0d6efd; }
+    .muted { color: #6c757d; }
+    .remove-btn { padding: .25rem .5rem; font-size: .85rem; }
+    .product-name { font-weight: 600; color: #0b2140; text-decoration: none; }
+    .product-name:hover { text-decoration: underline; }
+    .card-divider { height:1px; background:#f1f5f9; margin: .75rem 0; border-radius:2px; }
+    .sticky-summary { position: sticky; top: 20px; }
+    @media (max-width:767.98px){
+      .product-img { width: 100%; height: 180px; border-radius: 8px; }
+      .qty-input { width: 100%; }
+    }
+  </style>
 </head>
 
-<body style="background-color: lightblue;">
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Your Shopping Cart</h2>
+<body>
+  <div class="container cart-container">
+    <h2 class="mb-4">Your Shopping Cart</h2>
 
-        <% const itemsList = Array.isArray(items) ? items : []; %>
+    <% const itemsList = Array.isArray(items) ? items : []; %>
 
+    <div class="row">
+      <!-- Items list -->
+      <div class="col-md-8">
         <% if (itemsList.length === 0) { %>
-            <p class="text-center text-muted">Your cart is empty.</p>
-            <div class="text-center">
-                <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
+          <div class="card item-card text-center">
+            <div class="card-body">
+              <p class="text-muted mb-3">Your cart is empty.</p>
+              <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
             </div>
+          </div>
         <% } else { %>
+          <% itemsList.forEach(item => {
+               const price = Number(item.price || 0);
+               const qty = Number(item.quantity || 0);
+               const subtotal = price * qty;
+          %>
+            <div class="card item-card d-flex flex-column flex-md-row align-items-center gap-3">
+              <div class="d-flex align-items-center" style="min-width:120px;">
+                <% if (item.image) { %>
+                  <img src="/images/<%= item.image %>" alt="<%= item.productName %>" class="product-img me-3">
+                <% } else { %>
+                  <div class="product-img bg-light d-flex align-items-center justify-content-center muted me-3">No image</div>
+                <% } %>
+              </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover text-center align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="text-start">Product</th>
-                            <th>Image</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+              <div class="flex-grow-1 w-100">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <a href="/product/<%= item.productId %>" class="product-name"><%= item.productName %></a>
+                    <div class="muted small mt-1">Price: $<%= price.toFixed(2) %></div>
+                  </div>
 
-                    <tbody>
-                        <% itemsList.forEach(item => { 
-                            const price = Number(item.price || 0);
-                            const qty = Number(item.quantity || 0);
-                        %>
-                        <tr>
-                            <td class="text-start"><%= item.productName %></td>
-                            <td>
-                                <% if (item.image) { %>
-                                    <img src="/images/<%= item.image %>" width="70" alt="<%= item.productName %>">
-                                <% } else { %>
-                                    <span class="text-muted">No image</span>
-                                <% } %>
-                            </td>
+                  <div class="text-end">
+                    <div class="small muted">Subtotal</div>
+                    <div style="font-weight:700;">$<%= subtotal.toFixed(2) %></div>
+                  </div>
+                </div>
 
-                            <td>$<%= price.toFixed(2) %></td>
+                <div class="card-divider"></div>
 
-                            <td>
-                                <form action="/cart/update/<%= item.cartId %>" method="POST" class="d-flex justify-content-center align-items-center">
-                                    <input type="number" name="quantity" value="<%= qty %>" min="1" class="form-control" style="width: 90px;">
-                                    <button type="submit" class="btn btn-sm btn-primary ms-2">Update</button>
-                                </form>
-                            </td>
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <!-- Quantity update form (unchanged action & input name) -->
+                    <form action="/cart/update/<%= item.cartId %>" method="POST" class="d-flex align-items-center gap-2">
+                      <input type="number" name="quantity" value="<%= qty %>" min="1" class="form-control form-control-sm qty-input">
+                      <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                    </form>
 
-                            <td>$<%= (Number(item.price) * Number(item.quantity)).toFixed(2) %></td>
+                    <!-- Remove form (keep confirm) -->
+                    <form action="/cart/remove/<%= item.cartId %>" method="POST" onsubmit="return confirm('Remove this item?');">
+                      <button class="btn btn-outline-danger btn-sm remove-btn">Remove</button>
+                    </form>
+                  </div>
 
-                            <td>
-                                <form action="/cart/remove/<%= item.cartId %>" method="POST" onsubmit="return confirm('Remove this item?');">
-                                    <button class="btn btn-danger btn-sm">Remove</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+                  <div class="text-muted small">
+                    <!-- optional product meta -->
+                    In stock: <strong><%= item.quantity %></strong>
+                  </div>
+                </div>
+              </div>
             </div>
+          <% }) %>
 
-            <h3 class="text-end">Total: $<%= Number(total).toFixed(2) %></h3>
-            <div class="text-center mt-4">
-                <a href="/shopping" class="btn btn-primary">Continue Shopping</a>
-                <a href="/cart/clear" class="btn btn-danger ms-2" onclick="return confirm('Clear cart?');">Clear Cart</a>
-                <a href="/reviewcart" class="btn btn-success ms-2">Review Order</a>
-            </div>
+          <!-- Continue shopping button below list -->
+          <div class="mt-3">
+            <a href="/shopping" class="btn btn-outline-secondary">← Continue Shopping</a>
+          </div>
         <% } %>
+      </div>
+
+      <!-- Order summary -->
+      <div class="col-md-4">
+        <div class="summary-card sticky-summary">
+          <h5 class="mb-3">Order Summary</h5>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="muted">Subtotal</div>
+            <div>$<%= Number(total || 0).toFixed(2) %></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="muted">Shipping</div>
+            <div class="muted">Free</div>
+          </div>
+
+          <div class="card-divider"></div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="muted">Total</div>
+            <div class="total">$<%= Number(total || 0).toFixed(2) %></div>
+          </div>
+
+          <a href="/reviewcart" class="btn btn-success btn-lg w-100 mb-2">Proceed to Review Order</a>
+
+          <form action="/cart/clear" method="GET" onsubmit="return confirm('Clear cart?');">
+            <button type="submit" class="btn btn-outline-danger w-100">Clear Cart</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <%- include("./partials/footer") %>
 </body>
+
 </html>
 
 

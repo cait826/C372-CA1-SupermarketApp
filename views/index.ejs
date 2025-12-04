@@ -5,141 +5,374 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <style>
+    :root{
+      --brand-dark: #08192b;
+      --brand-mid: #0b233f;
+      --accent: #0d6efd;
+      --card-radius: 14px;
+      --muted: #6c757d;
+    }
+
+    html,body { height:100%; }
     body {
-      background-color: lightblue;
+      margin:0;
+      min-height:100%;
+      background: linear-gradient(180deg, rgba(224,242,255,0.55), rgba(218,237,255,0.4));
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #0b2540;
     }
-    .container {
-      margin-top: 20px;
+
+    /* Navbar (visual only) */
+    .site-navbar {
+      background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
+      box-shadow: 0 6px 20px rgba(11,35,64,0.12);
     }
+    .site-navbar .navbar-brand {
+      background: #fff;
+      color: #0b2540;
+      padding: .4rem .9rem;
+      border-radius: 8px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+    .brand-badge {
+      width:34px; height:34px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg,#e9f5ff,#dff0ff); color:var(--accent); font-weight:800;
+    }
+
+    .nav-link { color: rgba(74,158,255,0.95) !important; }
+    .nav-link:hover { color:#fff !important; text-decoration:underline; }
+
+    /* Header / hero layout */
+    .hero-wrap { padding:2rem 0 1.25rem; }
+    .hero-grid { display:grid; grid-template-columns: 1fr; gap:1rem; }
+    @media(min-width:992px){ .hero-grid { grid-template-columns: 1fr 420px; align-items:start; } }
+
+    .carousel-card {
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(16,24,40,0.08);
+      border: 1px solid rgba(13,110,253,0.05);
+      position: relative;
+    }
+
+    .carousel-inner img { height: 56vh; object-fit: cover; }
+
+    .carousel-indicators [data-bs-target] {
+      width:10px; height:10px; border-radius:50%;
+      background: rgba(255,255,255,0.6);
+      border: none;
+    }
+    .carousel-indicators .active { background: var(--accent); box-shadow: 0 2px 8px rgba(13,110,253,0.18); }
+
+    .carousel-overlay {
+      position:absolute; inset:0; pointer-events:none;
+      background: linear-gradient(180deg, rgba(2,6,23,0.06) 0%, rgba(2,6,23,0.05) 30%, rgba(2,6,23,0.0) 60%);
+    }
+
+    .carousel-caption-custom {
+      position:absolute; left:1.25rem; bottom:1.25rem; z-index:3; color:#fff;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      pointer-events:auto;
+    }
+    .carousel-caption-custom h3 { font-weight:800; font-size:1.5rem; margin:0; }
+    .carousel-caption-custom p { margin:0.25rem 0 0; opacity:0.95; }
+
+    /* Hero card (right) */
+    .hero-card {
+      background: linear-gradient(180deg,#fff,#fbfdff);
+      border-radius: var(--card-radius);
+      padding:1.25rem;
+      box-shadow: 0 12px 30px rgba(16,24,40,0.04);
+      border: 1px solid rgba(13,110,253,0.04);
+      height:100%;
+    }
+    .hero-card .avatar {
+      width:56px; height:56px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg,#e9f5ff,#dff0ff); color:var(--accent); font-weight:800;
+      font-size:1.15rem;
+    }
+
+    .welcome-title { font-weight:800; font-size:1.15rem; margin-bottom:.25rem; }
+    .welcome-sub { color:var(--muted); }
+
+    .action-row { margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap; }
+    .btn-cta { min-width: 160px; }
+
+    /* Sections below */
+    .section { margin-top:1.5rem; padding:1rem 0; }
+    .section .section-title { font-weight:700; margin-bottom:.5rem; }
+    .divider { height:1px; background: rgba(13,110,253,0.06); border-radius:2px; margin:1rem 0; }
+
+    /* Footer include spacing */
+    .page-container { max-width:1200px; margin:0 auto; padding:0 1rem; }
+
+    /* subtle animations */
+    .fade-slide-up { transform: translateY(6px); opacity:0; transition: all .45s ease; }
+    .fade-slide-up.show { transform: translateY(0); opacity:1; }
   </style>
   <title>Supermarket App</title>
 </head>
 <body>
-  <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #1a1a1a;">
-  <div class="container-fluid">
-    <!-- Logo/Brand with Icon -->
-    <a class="navbar-brand d-flex align-items-center" href="/" style="background-color: #f8f9fa; color: #000; padding: 0.5rem 1rem; border-radius: 4px;">
-      <span style="font-size: 1.2rem; font-weight: bold;">Supermarket App🛒</span>
-    </a>
-    
-    <!-- Toggler for mobile -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="collapse navbar-collapse" id="collapsibleNavbar">
-      <!-- Left-aligned main navigation -->
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="/" style="background-color: #f8f9fa; color: #000; padding: 0.5rem 1rem; border-radius: 4px; margin-left: 0.5rem;">Homepage</a>
-        </li>
-        
-        <% if (!user) { %>
-          <!-- Guest users: Show Register & Login -->
+  <nav class="navbar navbar-expand-sm site-navbar">
+    <div class="container page-container">
+      <a class="navbar-brand" href="/">
+        <span class="brand-badge">🛒</span>
+        <span>Supermarket App</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item">
-            <a class="nav-link" href="/register" style="color: #4a9eff;">Register</a>
+            <a class="nav-link" href="/" >Homepage</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/login" style="color: #4a9eff;">Login</a>
-          </li>
-        <% } else { %>
-          <!-- Logged-in users: Show role-based links -->
-          <% if (user.role === "admin") { %>
+
+          <% if (!user) { %>
             <li class="nav-item">
-              <a class="nav-link" href="/admin" style="color: #4a9eff;">Admin Dashboard</a>
-            </li>
-          <% } else if (user.role === "user") { %>
-            <li class="nav-item">
-              <a class="nav-link" href="/shopping" style="color: #4a9eff;">Shop Now</a>
+              <a class="nav-link" href="/register">Register</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/cart" style="color: #4a9eff;">Cart</a>
+              <a class="nav-link" href="/login">Login</a>
+            </li>
+          <% } else { %>
+            <% if (user.role === "admin") { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">Admin Dashboard</a>
+              </li>
+            <% } else if (user.role === "user") { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/shopping">Shop Now</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/cart">Cart</a>
+              </li>
+            <% } %>
+            <li class="nav-item">
+              <a class="nav-link" href="/logout">Logout</a>
             </li>
           <% } %>
-          <li class="nav-item">
-            <a class="nav-link" href="/logout" style="color: #4a9eff;">Logout</a>
-          </li>
-        <% } %>
-        
-        <!-- Dropdown menu -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #4a9eff;">More</a>
-          <ul class="dropdown-menu">
-            <% if (!user) { %>
-              <li><a class="dropdown-item" href="/login">Login</a></li>
-              <li><a class="dropdown-item" href="/register">Register</a></li>
-            <% } else { %>
-              <% if (user.role === "admin") { %>
-                <li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">More</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <% if (!user) { %>
+                <li><a class="dropdown-item" href="/login">Login</a></li>
+                <li><a class="dropdown-item" href="/register">Register</a></li>
               <% } else { %>
-                <li><a class="dropdown-item" href="/shopping">Shop Now</a></li>
-                <li><a class="dropdown-item" href="/cart">My Cart</a></li>
-              <% } %>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="/logout">Logout</a></li>
-            <% } %>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-    <!--this is the carsousel page-->
-    <div class="tab-content container mt-3">
-        <div id="home" class="tab-pane fade show active" role="tabpanel"><br>
-            <h3>Welcome to my supermarket app</h3>
-            <div id="demo" class="carousel slide" data-bs-ride="carousel" style="height: 50vh;">
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
-                </div>
-
-                <div class="carousel-inner" style="height: 100%;">
-                    <div class="carousel-item active">
-                        <img src="/images/supermarket1.jpg" class="d-block w-100 h-100" alt="supermarket1" style="object-fit: cover;">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="/images/supermarket2.jpg" class="d-block w-100 h-100" alt="supermarket2" style="object-fit: cover;">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="/images/supermarket3.jpg" class="d-block w-100 h-100" alt="supermarket3" style="object-fit: cover;">
-                    </div>
-                </div>
-
-                <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
-            </div>
-            <div class="container mt-5">
-
-    <!--this is the main page(welcome page)-->
-    <div class="container">
-        <p style="text-align: center mt-4;">
-            <% if (user) {%>
-              <% if (user.role === "admin") { %>
-                <br>
-                <h5>You are logged in as a administrator, <%=user.username%></h5>
-              <% } else if (user.role === "user"){ %>
-                <br>
-                <h5>Welcome back, <%=user.username%></h5>
-                <p>Please browse the available products below</p>
+                <% if (user.role === "admin") { %>
+                  <li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
+                <% } else { %>
+                  <li><a class="dropdown-item" href="/shopping">Shop Now</a></li>
+                  <li><a class="dropdown-item" href="/cart">My Cart</a></li>
                 <% } %>
-            <% } else { %>
-            <br>
-            <div class="text-center-mt-5">
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+              <% } %>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-              <div class="d-flex justify-content-center">
-                <a href="/register" class="btn btn-primary me-2">Register</a>
-                <a href="/login" class="btn btn-secondary">Login</a>
+  <main class="page-container">
+    <header class="hero-wrap">
+      <div class="hero-grid">
+        <!-- Carousel (left / primary) -->
+        <div class="carousel-card fade-slide-up" id="carouselArea">
+          <div id="demo" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+              <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active" aria-label="Slide 1"></button>
+              <button type="button" data-bs-target="#demo" data-bs-slide-to="1" aria-label="Slide 2"></button>
+              <button type="button" data-bs-target="#demo" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="/images/supermarket1.jpg" class="d-block w-100" alt="supermarket1">
+              </div>
+              <div class="carousel-item">
+                <img src="/images/supermarket2.jpg" class="d-block w-100" alt="supermarket2">
+              </div>
+              <div class="carousel-item">
+                <img src="/images/supermarket3.jpg" class="d-block w-100" alt="supermarket3">
               </div>
             </div>
-          <% } %>  
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+
+            <div class="carousel-overlay"></div>
+
+            <div class="carousel-caption-custom">
+              <h3>Fresh groceries, delivered fast</h3>
+              <p>Quality produce & essentials — great value every day</p>
+              <div class="mt-2">
+                <a href="/shopping" class="btn btn-primary btn-cta"><i class="bi bi-basket3 me-1"></i> Shop Now</a>
+                <a href="/cart" class="btn btn-outline-light btn-cta ms-2">View Cart</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right-side hero card -->
+        <aside class="hero-card fade-slide-up" style="align-self:start;">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar">🛍️</div>
+            <div>
+              <% if (user) {%>
+                <% if (user.role === "admin") { %>
+                  <div class="welcome-title">Administrator</div>
+                  <div class="welcome-sub">You are logged in as a administrator, <strong><%=user.username%></strong></div>
+                <% } else if (user.role === "user"){ %>
+                  <div class="welcome-title">Welcome back, <strong><%=user.username%></strong></div>
+                  <div class="welcome-sub">Please browse the available products below</div>
+                <% } %>
+              <% } else { %>
+                <div class="welcome-title">Welcome to Supermarket App</div>
+                <div class="welcome-sub">Create an account or sign in to start shopping</div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="action-row">
+            <% if (!user) {%>
+              <a href="/register" class="btn btn-primary btn-cta"><i class="bi bi-person-plus me-1"></i> Register</a>
+              <a href="/login" class="btn btn-outline-primary btn-cta">Login</a>
+            <% } else { %>
+              <% if (user.role !== 'admin') { %>
+                <a href="/shopping" class="btn btn-primary btn-cta"><i class="bi bi-bag-fill me-1"></i> Start Shopping</a>
+                <a href="/cart" class="btn btn-outline-primary btn-cta">My Cart</a>
+              <% } else { %>
+                <a href="/admin" class="btn btn-primary btn-cta"><i class="bi bi-speedometer2 me-1"></i> Go to Admin</a>
+              <% } %>
+            <% } %>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="small d-flex gap-2" style="flex-wrap:wrap;">
+            <div class="p-2" style="background:#eef6ff;border-radius:8px;">
+              <strong>Free delivery</strong>
+              <div class="small" style="color:var(--muted)">On orders over $50</div>
+            </div>
+            <div class="p-2" style="background:#fff7ee;border-radius:8px;">
+              <strong>Easy returns</strong>
+              <div class="small" style="color:var(--muted)">7-day return policy</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="d-flex justify-content-between align-items-end mb-2">
+        <div>
+          <div class="section-title">Featured Categories</div>
+          <div class="small-muted">Shop by category</div>
+        </div>
+        <div><a href="/shopping" class="text-decoration-none" style="color:var(--accent)">Browse all</a></div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <div class="card p-3 h-100" style="border-radius:12px;">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:56px;height:56px;border-radius:10px;background:#e9f5ff;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🥦</div>
+              <div>
+                <div style="font-weight:700">Produce</div>
+                <div class="small-muted">Fresh fruits & veg</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="card p-3 h-100" style="border-radius:12px;">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:56px;height:56px;border-radius:10px;background:#fff3e6;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🥤</div>
+              <div>
+                <div style="font-weight:700">Drinks</div>
+                <div class="small-muted">Juices & beverages</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="card p-3 h-100" style="border-radius:12px;">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:56px;height:56px;border-radius:10px;background:#eefcf3;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🍞</div>
+              <div>
+                <div style="font-weight:700">Bakery</div>
+                <div class="small-muted">Freshly baked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="card p-3 h-100" style="border-radius:12px;">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:56px;height:56px;border-radius:10px;background:#f5eefb;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🧴</div>
+              <div>
+                <div style="font-weight:700">Household</div>
+                <div class="small-muted">Essentials & more</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section">
+      <div class="section-title">Popular picks</div>
+      <div class="small-muted mb-2">Selected items customers love</div>
+
+      <div class="row g-3">
+        <% /* Keep product listing logic unchanged if present elsewhere. This area is purely visual placeholder. */ %>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-radius:12px;">
+            <img src="/images/supermarket1.jpg" class="img-fluid rounded mb-2" alt="popular1" style="height:120px;object-fit:cover;">
+            <div style="font-weight:700">Sample Product</div>
+            <div class="small-muted">$4.99</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card p-3" style="border-radius:12px;">
+            <img src="/images/supermarket2.jpg" class="img-fluid rounded mb-2" alt="popular2" style="height:120px;object-fit:cover;">
+            <div style="font-weight:700">Sample Product</div>
+            <div class="small-muted">$6.99</div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div style="height:48px;"></div>
+  </main>
+
+  <script>
+    // reveal subtle animations after load (visual only)
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.fade-slide-up').forEach(el => el.classList.add('show'));
+    });
+  </script>
+<%- include("./partials/footer") %>
 </body>
-</html> 
+</html>

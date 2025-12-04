@@ -1,48 +1,278 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Supermarket App</title>
+  <title>Supermarket App — Admin</title>
+
+  <style>
+    :root{
+      --accent: #0d6efd;
+      --nav-dark: #0b233f;
+      --muted: #6c757d;
+      --card-radius: 12px;
+    }
+
+    body {
+      background: lightblue;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #0b2540;
+      margin: 0;
+    }
+
+    /* Top navigation */
+    .admin-navbar {
+      background: linear-gradient(90deg, rgba(11,35,64,0.98), var(--nav-dark));
+      box-shadow: 0 6px 20px rgba(11,35,64,0.12);
+    }
+    .admin-navbar .navbar-brand {
+      background: #fff;
+      color: #0b2540;
+      padding: .35rem .75rem;
+      border-radius: 8px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+    .nav-link { color: rgba(74,158,255,0.95) !important; }
+    .nav-link:hover { color: #fff !important; text-decoration: underline; }
+
+    .page-container { max-width:1100px; margin: 1.25rem auto; padding: 0 1rem; }
+
+    /* Header card */
+    .admin-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      background: linear-gradient(180deg,#ffffff,#fbfdff);
+      border-radius: var(--card-radius);
+      padding:1.1rem 1.25rem;
+      box-shadow: 0 10px 30px rgba(16,24,40,0.06);
+      border: 1px solid rgba(13,110,253,0.04);
+      margin-bottom:1rem;
+    }
+    .admin-title { font-weight:800; font-size:1.25rem; }
+    .admin-sub { color:var(--muted); }
+
+    .quick-stats { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+    .stat {
+      background: rgba(13,110,253,0.04);
+      border-radius:10px;
+      padding: .55rem .75rem;
+      min-width:120px;
+      text-align:center;
+    }
+    .stat .num { font-weight:700; color:var(--accent); }
+
+    /* Action tiles */
+    .tiles-grid {
+      display:grid;
+      grid-template-columns: repeat(1,1fr);
+      gap: .9rem;
+      margin-bottom:1.25rem;
+    }
+    @media(min-width:576px){ .tiles-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(min-width:992px){ .tiles-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .tile {
+      background: #fff;
+      border-radius: 12px;
+      padding: .9rem;
+      box-shadow: 0 8px 24px rgba(16,24,40,0.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: .75rem;
+      transition: transform .12s ease, box-shadow .12s ease;
+      border: 1px solid rgba(11,35,64,0.04);
+    }
+    .tile:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(16,24,40,0.08); }
+
+    .tile-left { display:flex; gap:.75rem; align-items:center; min-width:0; }
+    .tile-icon {
+      width:56px; height:56px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg,#e9f5ff,#dff0ff);
+      color: var(--accent);
+      font-size:1.25rem;
+      flex-shrink:0;
+    }
+    .tile-info { min-width:0; }
+    .tile-title { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tile-sub { color:var(--muted); font-size:.92rem; }
+
+    .tile-actions { display:flex; gap:.5rem; align-items:center; }
+    .tile .btn {
+      white-space:nowrap;
+      border-radius:8px;
+      padding: .45rem .65rem;
+    }
+    .btn-primary-soft {
+      background: #e9f5ff; color: var(--accent); border:1px solid rgba(13,110,253,0.08);
+    }
+
+    /* Footer quick links */
+    .admin-footer {
+      margin-top: 1rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      flex-wrap:wrap;
+      color:var(--muted);
+    }
+
+    /* Responsive tweaks */
+    @media(max-width:575.98px){
+      .admin-header { flex-direction:column; align-items:flex-start; gap:.6rem; }
+    }
+  </style>
 </head>
-<body style="background-color: lightblue">
-    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Supermarket App</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-          <ul class="navbar-nav">
-            <li class = "nav-item">
-                <a class="nav-link" href="/inventory" style="color: #4a9eff;">View Inventory</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/addProduct" style="color: #4a9eff;">Add Product</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/manageuser" style="color: #4a9eff;">Manage Users</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/manageOrders" style="color: #4a9eff;">Manage Orders</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/logout" style="color: #4a9eff;">Logout</a>
-            </li>
-          </ul>
+<body>
+  <nav class="navbar navbar-expand-sm admin-navbar">
+    <div class="container page-container">
+      <a class="navbar-brand" href="/">
+        <span style="width:34px;height:34px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#e9f5ff,#dff0ff);color:var(--accent);font-weight:800">🛒</span>
+        <span>Supermarket App</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/inventory" style="color: #4a9eff;">View Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/addProduct" style="color: #4a9eff;">Add Product</a></li>
+          <li class="nav-item"><a class="nav-link" href="/manageuser" style="color: #4a9eff;">Manage Users</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/manageOrders" style="color: #fff;font-weight:600;">Manage Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/manageReviews" style="color: #4a9eff;">Manage Reviews</a></li>
+          <li class="nav-item"><a class="nav-link" href="/logout" style="color: #4a9eff;">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="admin-header">
+      <div>
+        <div class="admin-title">Admin Dashboard</div>
+        <div class="admin-sub">Welcome, <%= user.username %> (<%= user.role %>)! Use the tiles below to manage the store.</div>
+      </div>
+
+      <div class="quick-stats">
+        <div class="stat">
+          <div class="num">—</div>
+          <div class="small" style="color:var(--muted)">Orders</div>
+        </div>
+        <div class="stat">
+          <div class="num">—</div>
+          <div class="small" style="color:var(--muted)">Products</div>
+        </div>
+        <div class="stat">
+          <div class="num">—</div>
+          <div class="small" style="color:var(--muted)">Users</div>
         </div>
       </div>
-    </nav>
-
-    <div class="container mt-4">
-      <h2>Admin Dashboard</h2>
-      <p>Welcome, <%= user.username %> (<%= user.role %>)! Use the navigation bar to manage products and users.</p>
     </div>
-    <br> 
-    <button class="btn btn-primary" onclick="location.href='/inventory'">View Inventory</button>
-    <button class="btn btn-secondary" onclick="location.href='/manageuser'">Manage Users</button>
-    <button class="btn btn-success" onclick="location.href='/addProduct'">Add Product</button>
-    <button class="btn btn-info" onclick="location.href='/manageOrders'">Manage Orders</button>
+
+    <div class="tiles-grid">
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">View Inventory</div>
+            <div class="tile-sub">Browse and manage product listings</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/inventory'">View Inventory</button>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">Manage Users</div>
+            <div class="tile-sub">Add, edit, or remove user accounts</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/manageuser'">Manage Users</button>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-plus-circle-fill"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">Add Product</div>
+            <div class="tile-sub">Create a new product listing</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/addProduct'">Add Product</button>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-receipt-cutoff"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">Manage Orders</div>
+            <div class="tile-sub">View and update order statuses</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/manageOrders'">Manage Orders</button>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-chat-left-dots-fill"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">Manage Reviews</div>
+            <div class="tile-sub">Moderate customer reviews</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/manageReviews'">Manage Reviews</button>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-left">
+          <div class="tile-icon"><i class="bi bi-box-arrow-right"></i></div>
+          <div class="tile-info">
+            <div class="tile-title">Logout</div>
+            <div class="tile-sub">Sign out of the admin account</div>
+          </div>
+        </div>
+
+        <div class="tile-actions">
+          <button class="btn btn-primary-soft" onclick="location.href='/logout'">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-footer">
+      <div class="small" style="color:var(--muted)">Need help? Visit the documentation or contact support.</div>
+      <div><small style="color:var(--muted)">© Supermarket App</small></div>
+    </div>
+  </div>
+<%- include("./partials/footer") %>
 </body>
+
 </html>
